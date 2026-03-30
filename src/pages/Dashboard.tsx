@@ -100,20 +100,27 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
+      <div className="grid grid-cols-3 gap-3 mb-8">
         <button
           onClick={() => navigate("/centers")}
           className="flex flex-col items-center gap-2 rounded-2xl bg-card border border-border p-5 hover:border-primary transition-all active:scale-[0.98]"
         >
           <MapPin className="w-6 h-6 text-primary" />
-          <span className="text-sm font-medium text-foreground">Hemocentros</span>
+          <span className="text-xs font-medium text-foreground">Hemocentros</span>
         </button>
         <button
           onClick={addDonation}
           className="flex flex-col items-center gap-2 rounded-2xl bg-card border border-border p-5 hover:border-primary transition-all active:scale-[0.98]"
         >
           <Plus className="w-6 h-6 text-primary" />
-          <span className="text-sm font-medium text-foreground">Registrar doação</span>
+          <span className="text-xs font-medium text-foreground">Registrar</span>
+        </button>
+        <button
+          onClick={() => navigate("/rewards")}
+          className="flex flex-col items-center gap-2 rounded-2xl bg-card border border-border p-5 hover:border-primary transition-all active:scale-[0.98]"
+        >
+          <Gift className="w-6 h-6 text-primary" />
+          <span className="text-xs font-medium text-foreground">Recompensas</span>
         </button>
       </div>
 
