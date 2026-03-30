@@ -11,6 +11,7 @@ import EligibilityQuiz from "./pages/EligibilityQuiz";
 import DonorRegister from "./pages/DonorRegister";
 import Dashboard from "./pages/Dashboard";
 import BloodCenters from "./pages/BloodCenters";
+import Rewards from "./pages/Rewards";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

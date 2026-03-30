@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, Droplets, AlertTriangle, Plus } from "lucide-react";
+import { MapPin, Clock, Droplets, AlertTriangle, Plus, Gift } from "lucide-react";
+import { POINTS_PER_DONATION } from "@/data/rewards";
 import { differenceInDays, format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import logo from "@/assets/logo-doers.png";
