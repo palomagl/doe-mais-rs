@@ -57,6 +57,11 @@ const Dashboard = () => {
     const updatedDonor = { ...donor, lastDonation: newDonation.date };
     setDonor(updatedDonor);
     localStorage.setItem("donor", JSON.stringify(updatedDonor));
+
+    // Add reward points
+    const currentPoints = Number(localStorage.getItem("rewardPoints") || "0");
+    const newPoints = currentPoints + POINTS_PER_DONATION;
+    localStorage.setItem("rewardPoints", String(newPoints));
   };
 
   return (
