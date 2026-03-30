@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, Droplets, AlertTriangle, Plus } from "lucide-react";
+import { MapPin, Clock, Droplets, AlertTriangle, Plus, Gift } from "lucide-react";
+import { POINTS_PER_DONATION } from "@/data/rewards";
 import { differenceInDays, format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import logo from "@/assets/logo-doers.png";
@@ -56,6 +57,11 @@ const Dashboard = () => {
     const updatedDonor = { ...donor, lastDonation: newDonation.date };
     setDonor(updatedDonor);
     localStorage.setItem("donor", JSON.stringify(updatedDonor));
+
+    // Add reward points
+    const currentPoints = Number(localStorage.getItem("rewardPoints") || "0");
+    const newPoints = currentPoints + POINTS_PER_DONATION;
+    localStorage.setItem("rewardPoints", String(newPoints));
   };
 
   return (
@@ -94,20 +100,27 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
+      <div className="grid grid-cols-3 gap-3 mb-8">
         <button
           onClick={() => navigate("/centers")}
           className="flex flex-col items-center gap-2 rounded-2xl bg-card border border-border p-5 hover:border-primary transition-all active:scale-[0.98]"
         >
           <MapPin className="w-6 h-6 text-primary" />
-          <span className="text-sm font-medium text-foreground">Hemocentros</span>
+          <span className="text-xs font-medium text-foreground">Hemocentros</span>
         </button>
         <button
           onClick={addDonation}
           className="flex flex-col items-center gap-2 rounded-2xl bg-card border border-border p-5 hover:border-primary transition-all active:scale-[0.98]"
         >
           <Plus className="w-6 h-6 text-primary" />
-          <span className="text-sm font-medium text-foreground">Registrar doação</span>
+          <span className="text-xs font-medium text-foreground">Registrar</span>
+        </button>
+        <button
+          onClick={() => navigate("/rewards")}
+          className="flex flex-col items-center gap-2 rounded-2xl bg-card border border-border p-5 hover:border-primary transition-all active:scale-[0.98]"
+        >
+          <Gift className="w-6 h-6 text-primary" />
+          <span className="text-xs font-medium text-foreground">Recompensas</span>
         </button>
       </div>
 

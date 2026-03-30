@@ -11,6 +11,7 @@ import EligibilityQuiz from "./pages/EligibilityQuiz";
 import DonorRegister from "./pages/DonorRegister";
 import Dashboard from "./pages/Dashboard";
 import BloodCenters from "./pages/BloodCenters";
+import Rewards from "./pages/Rewards";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/donor-register" element={<ProtectedRoute><DonorRegister /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/centers" element={<ProtectedRoute><BloodCenters /></ProtectedRoute>} />
+          <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
