@@ -14,7 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      donations: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          location: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          location?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          location?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          blood_type: string
+          city: string
+          created_at: string
+          id: string
+          is_existing_donor: boolean
+          last_donation: string | null
+          name: string
+          reward_points: number
+          sex: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          blood_type?: string
+          city?: string
+          created_at?: string
+          id?: string
+          is_existing_donor?: boolean
+          last_donation?: string | null
+          name: string
+          reward_points?: number
+          sex?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          blood_type?: string
+          city?: string
+          created_at?: string
+          id?: string
+          is_existing_donor?: boolean
+          last_donation?: string | null
+          name?: string
+          reward_points?: number
+          sex?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      redeemed_rewards: {
+        Row: {
+          id: string
+          redeemed_at: string
+          reward_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          redeemed_at?: string
+          reward_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          redeemed_at?: string
+          reward_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
