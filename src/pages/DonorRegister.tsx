@@ -7,11 +7,18 @@ import { useToast } from "@/hooks/use-toast";
 
 const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
+const rsCities = [
+  "Porto Alegre", "Caxias do Sul", "Pelotas", "Canoas", "Santa Maria",
+  "Gravataí", "Viamão", "Novo Hamburgo", "São Leopoldo", "Rio Grande",
+  "Passo Fundo", "Sapucaia do Sul", "Uruguaiana", "Santa Cruz do Sul", "Bagé",
+];
+
 const DonorRegister = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [showCities, setShowCities] = useState(false);
   const [form, setForm] = useState({
     name: "",
     sex: "",
@@ -20,7 +27,11 @@ const DonorRegister = () => {
     lastDonation: "",
   });
 
-  const isValid = form.name && form.sex && form.bloodType && form.city;
+  const filteredCities = rsCities.filter((c) =>
+    c.toLowerCase().includes(form.city.toLowerCase())
+  );
+
+  const isValid = form.name.trim().length >= 2 && form.sex && form.bloodType && form.city.trim();
 
   const handleSubmit = async () => {
     if (!isValid || !user) return;
@@ -28,17 +39,24 @@ const DonorRegister = () => {
     try {
       const { error } = await supabase.from("profiles").insert({
         user_id: user.id,
-        name: form.name,
+        name: form.name.trim(),
         sex: form.sex,
         blood_type: form.bloodType,
-        city: form.city,
+        city: form.city.trim(),
         last_donation: form.lastDonation || null,
         is_existing_donor: true,
       });
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("duplicate") || error.code === "23505") {
+          toast({ title: "Perfil já existe", description: "Você já tem um cadastro.", variant: "destructive" });
+          navigate("/dashboard");
+          return;
+        }
+        throw error;
+      }
       navigate("/dashboard");
     } catch (e: any) {
-      toast({ title: "Erro", description: e.message, variant: "destructive" });
+      toast({ title: "Erro", description: e.message || "Tente novamente.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -47,7 +65,7 @@ const DonorRegister = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="px-6 pt-6 pb-4">
-        <button onClick={() => navigate("/")} className="text-muted-foreground flex items-center gap-1 text-sm">
+        <button onClick={() => navigate("/")} className="text-muted-foreground flex items-center gap-1 text-sm active:scale-95">
           <ArrowLeft className="w-4 h-4" /> Voltar
         </button>
       </div>
@@ -58,7 +76,7 @@ const DonorRegister = () => {
 
         <div className="flex flex-col gap-5 flex-1">
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Nome completo</label>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Nome completo *</label>
             <input
               type="text"
               placeholder="Seu nome completo"
@@ -69,13 +87,14 @@ const DonorRegister = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Sexo</label>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Sexo *</label>
             <div className="flex gap-2">
               {["Masculino", "Feminino", "Outro"].map((s) => (
                 <button
                   key={s}
+                  type="button"
                   onClick={() => setForm({ ...form, sex: s })}
-                  className={`flex-1 rounded-xl border py-3 text-sm font-medium transition-all ${
+                  className={`flex-1 rounded-xl border py-3 text-sm font-medium transition-all active:scale-[0.97] ${
                     form.sex === s
                       ? "border-primary bg-primary text-primary-foreground shadow-md"
                       : "border-border bg-card text-foreground"
@@ -88,13 +107,14 @@ const DonorRegister = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Tipo sanguíneo</label>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Tipo sanguíneo *</label>
             <div className="grid grid-cols-4 gap-2">
               {bloodTypes.map((bt) => (
                 <button
                   key={bt}
+                  type="button"
                   onClick={() => setForm({ ...form, bloodType: bt })}
-                  className={`rounded-xl border py-3 text-sm font-bold transition-all ${
+                  className={`rounded-xl border py-3 text-sm font-bold transition-all active:scale-[0.97] ${
                     form.bloodType === bt
                       ? "border-primary bg-primary text-primary-foreground shadow-md"
                       : "border-border bg-card text-foreground"
@@ -106,15 +126,31 @@ const DonorRegister = () => {
             </div>
           </div>
 
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Cidade</label>
+          <div className="relative">
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Cidade *</label>
             <input
               type="text"
               placeholder="Ex: Porto Alegre"
               value={form.city}
-              onChange={(e) => setForm({ ...form, city: e.target.value })}
+              onChange={(e) => { setForm({ ...form, city: e.target.value }); setShowCities(true); }}
+              onFocus={() => setShowCities(true)}
+              onBlur={() => setTimeout(() => setShowCities(false), 200)}
               className="w-full rounded-xl border border-input bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
+            {showCities && form.city && filteredCities.length > 0 && (
+              <div className="absolute top-full left-0 right-0 bg-card border border-border rounded-xl mt-1 shadow-lg z-20 max-h-40 overflow-y-auto">
+                {filteredCities.slice(0, 5).map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onMouseDown={() => { setForm({ ...form, city: c }); setShowCities(false); }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
@@ -122,6 +158,7 @@ const DonorRegister = () => {
             <input
               type="date"
               value={form.lastDonation}
+              max={new Date().toISOString().split("T")[0]}
               onChange={(e) => setForm({ ...form, lastDonation: e.target.value })}
               className="w-full rounded-xl border border-input bg-card px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />

@@ -5,8 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Droplets } from "lucide-react";
+import { Droplets, Eye, EyeOff } from "lucide-react";
 import logo from "@/assets/logo-doers.png";
+
+const translateError = (msg: string) => {
+  if (msg.includes("Invalid login")) return "E-mail ou senha incorretos.";
+  if (msg.includes("Email not confirmed")) return "Confirme seu e-mail antes de entrar.";
+  if (msg.includes("already registered") || msg.includes("already been registered")) return "Este e-mail já está cadastrado. Tente entrar.";
+  if (msg.includes("Password should be")) return "A senha deve ter no mínimo 6 caracteres.";
+  if (msg.includes("rate limit") || msg.includes("too many")) return "Muitas tentativas. Aguarde um momento.";
+  if (msg.includes("network") || msg.includes("fetch")) return "Sem conexão. Verifique sua internet.";
+  return msg;
+};
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,26 +25,28 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim() || !password) return;
     setLoading(true);
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ email: email.trim(), password });
         if (error) throw error;
-        toast({ title: "Conta criada!", description: "Bem-vindo ao Doe+ RS!" });
+        toast({ title: "Conta criada! 🎉", description: "Bem-vindo ao Doe+ RS!" });
         navigate("/");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
         navigate("/");
       }
     } catch (error: any) {
       toast({
         title: "Erro",
-        description: error.message || "Algo deu errado.",
+        description: translateError(error.message || "Algo deu errado."),
         variant: "destructive",
       });
     } finally {
@@ -78,27 +90,42 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
               className="rounded-xl h-12 bg-card"
             />
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="password" className="text-foreground text-sm">Senha</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="rounded-xl h-12 bg-card"
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                autoComplete={isSignUp ? "new-password" : "current-password"}
+                className="rounded-xl h-12 bg-card pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+            {isSignUp && (
+              <p className="text-xs text-muted-foreground">Mínimo de 6 caracteres</p>
+            )}
           </div>
 
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || !email.trim() || !password}
             className="w-full h-12 rounded-xl text-base font-bold shadow-lg mt-2"
           >
             {loading ? (

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, LogOut, Shield, AlertTriangle } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
 const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -14,6 +14,7 @@ const Profile = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [form, setForm] = useState({
     name: "",
     sex: "",
@@ -35,18 +36,26 @@ const Profile = () => {
   }, [user]);
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user || !form.name.trim()) {
+      toast({ title: "Preencha seu nome", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update(form)
+      .update({ ...form, name: form.name.trim(), city: form.city.trim() })
       .eq("user_id", user.id);
     setSaving(false);
     if (error) {
-      toast({ title: "Erro ao salvar", variant: "destructive" });
+      toast({ title: "Erro ao salvar", description: "Tente novamente.", variant: "destructive" });
     } else {
       toast({ title: "Perfil atualizado! ✅" });
     }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
   };
 
   if (loading) {
@@ -70,11 +79,12 @@ const Profile = () => {
       <div className="px-6 pt-6">
         <div className="flex flex-col gap-5">
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Nome</label>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Nome *</label>
             <input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full rounded-xl border border-input bg-card px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Seu nome completo"
+              className="w-full rounded-xl border border-input bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
 
@@ -84,8 +94,9 @@ const Profile = () => {
               {["Masculino", "Feminino", "Outro"].map((s) => (
                 <button
                   key={s}
+                  type="button"
                   onClick={() => setForm({ ...form, sex: s })}
-                  className={`flex-1 rounded-xl border py-3 text-sm font-medium transition-all ${
+                  className={`flex-1 rounded-xl border py-3 text-sm font-medium transition-all active:scale-[0.97] ${
                     form.sex === s
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border bg-card text-foreground"
@@ -103,8 +114,9 @@ const Profile = () => {
               {bloodTypes.map((bt) => (
                 <button
                   key={bt}
+                  type="button"
                   onClick={() => setForm({ ...form, blood_type: bt })}
-                  className={`rounded-xl border py-3 text-sm font-bold transition-all ${
+                  className={`rounded-xl border py-3 text-sm font-bold transition-all active:scale-[0.97] ${
                     form.blood_type === bt
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border bg-card text-foreground"
@@ -121,7 +133,8 @@ const Profile = () => {
             <input
               value={form.city}
               onChange={(e) => setForm({ ...form, city: e.target.value })}
-              className="w-full rounded-xl border border-input bg-card px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Ex: Porto Alegre"
+              className="w-full rounded-xl border border-input bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
 
@@ -132,6 +145,45 @@ const Profile = () => {
           >
             {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> Salvar</>}
           </button>
+
+          {/* Info */}
+          <div className="rounded-xl bg-muted/50 p-4 flex items-start gap-3">
+            <Shield className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground">
+              Seus dados são protegidos e usados apenas para melhorar sua experiência de doação.
+            </p>
+          </div>
+
+          {/* Logout */}
+          {!showLogoutConfirm ? (
+            <button
+              onClick={() => setShowLogoutConfirm(true)}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-destructive/30 text-destructive py-3.5 font-semibold transition-all hover:bg-destructive/5 active:scale-[0.98]"
+            >
+              <LogOut className="w-5 h-5" /> Sair da conta
+            </button>
+          ) : (
+            <div className="rounded-2xl border border-destructive/30 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+                <p className="text-sm font-semibold text-foreground">Tem certeza que deseja sair?</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium active:scale-[0.97]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="flex-1 py-2.5 rounded-xl bg-destructive text-destructive-foreground text-sm font-medium active:scale-[0.97]"
+                >
+                  Sair
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

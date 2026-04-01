@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Gift, Star, Trophy, Check } from "lucide-react";
+import { Gift, Star, Trophy, Check, Loader2, AlertTriangle } from "lucide-react";
 import { rewards, Reward, POINTS_PER_DONATION } from "@/data/rewards";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,11 +7,12 @@ import { toast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 
 const Rewards = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [points, setPoints] = useState(0);
   const [redeemedIds, setRedeemedIds] = useState<string[]>([]);
   const [filter, setFilter] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
+  const [redeeming, setRedeeming] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -29,27 +29,51 @@ const Rewards = () => {
         .select("reward_id")
         .eq("user_id", user.id);
       if (r) setRedeemedIds(r.map((x) => x.reward_id));
+      setLoading(false);
     };
     load();
   }, [user]);
 
   const handleRedeem = async (reward: Reward) => {
-    if (!user) return;
+    if (!user || redeeming) return;
     if (points < reward.pointsCost) {
       toast({ title: "Pontos insuficientes", description: `Faltam ${reward.pointsCost - points} pontos.`, variant: "destructive" });
       return;
     }
 
-    const newPoints = points - reward.pointsCost;
-    await supabase.from("profiles").update({ reward_points: newPoints }).eq("user_id", user.id);
-    await supabase.from("redeemed_rewards").insert({ user_id: user.id, reward_id: reward.id });
+    setRedeeming(reward.id);
+    try {
+      const newPoints = points - reward.pointsCost;
+      const { error: updErr } = await supabase.from("profiles").update({ reward_points: newPoints }).eq("user_id", user.id);
+      if (updErr) throw updErr;
+      const { error: insErr } = await supabase.from("redeemed_rewards").insert({ user_id: user.id, reward_id: reward.id });
+      if (insErr) throw insErr;
 
-    setPoints(newPoints);
-    setRedeemedIds([...redeemedIds, reward.id]);
-    toast({ title: "Resgatado! 🎉", description: reward.title });
+      setPoints(newPoints);
+      setRedeemedIds([...redeemedIds, reward.id]);
+      toast({ title: "Resgatado! 🎉", description: reward.title });
+    } catch {
+      toast({ title: "Erro ao resgatar", description: "Tente novamente.", variant: "destructive" });
+    } finally {
+      setRedeeming(null);
+    }
   };
 
   const filtered = filter === "all" ? rewards : rewards.filter((r) => r.category === filter);
+
+  const levelInfo = points >= 1000
+    ? { label: "Doador Ouro 🥇", desc: "Você é um herói do RS!", next: null }
+    : points >= 500
+    ? { label: "Doador Prata 🥈", desc: `Faltam ${1000 - points} pts para Ouro`, next: 1000 }
+    : { label: "Doador Bronze 🥉", desc: `Faltam ${500 - points} pts para Prata`, next: 500 };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -66,22 +90,26 @@ const Rewards = () => {
         </div>
       </div>
 
-      <div className="px-6 -mt-4 relative z-10">
-        {/* Level */}
-        <div className="flex items-center gap-3 rounded-2xl bg-card border border-border p-4 mb-5 shadow-sm">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <Trophy className="w-6 h-6 text-primary" />
+      <div className="px-5 -mt-4 relative z-10">
+        {/* Level with progress */}
+        <div className="rounded-2xl bg-card border border-border p-4 mb-5 shadow-sm">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-foreground">{levelInfo.label}</p>
+              <p className="text-xs text-muted-foreground">{levelInfo.desc}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold text-foreground">
-              {points >= 1000 ? "Doador Ouro 🥇" : points >= 500 ? "Doador Prata 🥈" : "Doador Bronze 🥉"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {points >= 1000
-                ? "Você é um herói do RS!"
-                : `Faltam ${(points >= 500 ? 1000 : 500) - points} pts para o próximo nível`}
-            </p>
-          </div>
+          {levelInfo.next && (
+            <div className="w-full bg-muted rounded-full h-2">
+              <div
+                className="bg-primary h-2 rounded-full transition-all duration-700"
+                style={{ width: `${Math.min(100, (points / levelInfo.next) * 100)}%` }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Filter */}
@@ -96,7 +124,7 @@ const Rewards = () => {
             <button
               key={cat.key}
               onClick={() => setFilter(cat.key)}
-              className={`whitespace-nowrap text-sm px-4 py-2 rounded-full border transition-all ${
+              className={`whitespace-nowrap text-sm px-4 py-2 rounded-full border transition-all active:scale-[0.97] ${
                 filter === cat.key
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-card text-foreground border-border"
@@ -112,6 +140,7 @@ const Rewards = () => {
           {filtered.map((reward) => {
             const isRedeemed = redeemedIds.includes(reward.id);
             const canAfford = points >= reward.pointsCost;
+            const isRedeeming = redeeming === reward.id;
             return (
               <div
                 key={reward.id}
@@ -128,20 +157,23 @@ const Rewards = () => {
                   <p className="text-xs text-primary font-bold mt-0.5">{reward.pointsCost} pts</p>
                 </div>
                 {isRedeemed ? (
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Check className="w-5 h-5 text-primary" />
+                  <div className="flex flex-col items-center shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Check className="w-5 h-5 text-primary" />
+                    </div>
+                    <span className="text-[10px] text-primary font-medium mt-1">Resgatado</span>
                   </div>
                 ) : (
                   <button
                     onClick={() => handleRedeem(reward)}
-                    disabled={!canAfford}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition-all ${
+                    disabled={!canAfford || !!isRedeeming}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition-all active:scale-95 ${
                       canAfford
-                        ? "bg-primary text-primary-foreground active:scale-95"
+                        ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground cursor-not-allowed"
                     }`}
                   >
-                    Resgatar
+                    {isRedeeming ? <Loader2 className="w-4 h-4 animate-spin" /> : "Resgatar"}
                   </button>
                 )}
               </div>
