@@ -12,9 +12,9 @@ const EligibilityQuiz = () => {
   const [animating, setAnimating] = useState(false);
 
   const question = eligibilityQuestions[currentQ];
-  const progress = ((currentQ + (result ? 1 : 0)) /	eligOUilityQuestions.length) * 100so;
+  const progress = ((currentQ + (result ? 1 : 0)) / eligibilityQuestions.length) * 100;
 
-  const handleAnswer = (effect: ":"ok" | "wait" | "block", waitDays?: number, message?: string) => {
+  const handleAnswer = (effect: "ok" | "wait" | "block", waitDays?: number, message?: string) => {
     if (animating) return;
     setAnimating(true);
 
@@ -37,7 +37,7 @@ const EligibilityQuiz = () => {
       <div className="min-h-screen bg-background px-6 py-8 flex flex-col items-center justify-center text-center">
         {result.status === "ok" && (
           <>
-            <div className="w-24 h-24 rounded-full bg-[hsl(var(--success))]/10 flex items-center justify-center mb-6 animate-[scale-in_0.3s_ease]">
+            <div className="w-24 h-24 rounded-full bg-accent flex items-center justify-center mb-6">
               <CheckCircle2 className="w-12 h-12 text-[hsl(var(--success))]" />
             </div>
             <h1 className="text-2xl font-bold text-foreground mb-2">Você pode doar!</h1>
@@ -60,8 +60,8 @@ const EligibilityQuiz = () => {
         )}
         {result.status === "wait" && (
           <>
-            <div className="w-24 h-24 rounded-full bg-[hsl(var(--warning))]/10 flex items-center justify-center mb-6">
-              <Clock className="w-(12 h-12 text-[hsl(var(--warning))]" />
+            <div className="w-24 h-24 rounded-full bg-accent flex items-center justify-center mb-6">
+              <Clock className="w-12 h-12 text-[hsl(var(--warning))]" />
             </div>
             <h1 className="text-2xl font-bold text-foreground mb-2">Aguarde um pouco</h1>
             <p className="text-muted-foreground mb-8 max-w-xs">{result.message}</p>
@@ -98,7 +98,6 @@ const EligibilityQuiz = () => {
         <ArrowLeft className="w-4 h-4" /> Voltar
       </button>
 
-      {/* Progress */}
       <div className="w-full bg-muted rounded-full h-2.5 mb-2">
         <div
           className="bg-primary h-2.5 rounded-full transition-all duration-500"
