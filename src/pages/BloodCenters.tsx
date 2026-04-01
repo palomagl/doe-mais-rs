@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, MapPin, Phone, Clock } from "lucide-react";
+import { Search, MapPin, Phone, Clock, ExternalLink } from "lucide-react";
 import { bloodCenters } from "@/data/bloodCenters";
 import BottomNav from "@/components/BottomNav";
 
@@ -12,6 +12,11 @@ const BloodCenters = () => {
       c.city.toLowerCase().includes(search.toLowerCase())
   );
 
+  const openMaps = (center: typeof bloodCenters[0]) => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${center.lat},${center.lng}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
@@ -23,7 +28,7 @@ const BloodCenters = () => {
         </div>
       </div>
 
-      <div className="px-6 -mt-4 relative z-10">
+      <div className="px-5 -mt-4 relative z-10">
         {/* Search */}
         <div className="relative mb-5">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -36,6 +41,11 @@ const BloodCenters = () => {
           />
         </div>
 
+        {/* Count */}
+        <p className="text-xs text-muted-foreground mb-3">
+          {filtered.length} hemocentro{filtered.length !== 1 ? "s" : ""} encontrado{filtered.length !== 1 ? "s" : ""}
+        </p>
+
         {/* List */}
         <div className="flex flex-col gap-3">
           {filtered.map((center) => (
@@ -43,7 +53,16 @@ const BloodCenters = () => {
               key={center.id}
               className="rounded-2xl bg-card border border-border p-5 hover:border-primary transition-all"
             >
-              <h3 className="font-bold text-foreground mb-3 text-sm leading-snug">{center.name}</h3>
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <h3 className="font-bold text-foreground text-sm leading-snug flex-1">{center.name}</h3>
+                <button
+                  onClick={() => openMaps(center)}
+                  className="shrink-0 w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors active:scale-95"
+                  aria-label="Abrir no Google Maps"
+                >
+                  <ExternalLink className="w-4 h-4 text-primary" />
+                </button>
+              </div>
               <div className="flex flex-col gap-2">
                 <div className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
@@ -61,7 +80,11 @@ const BloodCenters = () => {
             </div>
           ))}
           {filtered.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">Nenhum hemocentro encontrado.</p>
+            <div className="text-center py-12">
+              <MapPin className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-muted-foreground text-sm">Nenhum hemocentro encontrado.</p>
+              <p className="text-xs text-muted-foreground mt-1">Tente buscar por outra cidade.</p>
+            </div>
           )}
         </div>
       </div>
