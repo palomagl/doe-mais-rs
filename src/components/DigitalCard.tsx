@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera, Loader2, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -19,14 +19,17 @@ const DigitalCard = ({ userId, name, bloodType, cpf, cardPhotoUrl, onPhotoChange
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // generate signed URL for private bucket viewing
-  useState(() => {
+  useEffect(() => {
+    let active = true;
     if (cardPhotoUrl) {
       supabase.storage.from("donor-cards").createSignedUrl(cardPhotoUrl, 3600).then(({ data }) => {
-        if (data?.signedUrl) setSignedUrl(data.signedUrl);
+        if (active && data?.signedUrl) setSignedUrl(data.signedUrl);
       });
+    } else {
+      setSignedUrl(null);
     }
-  });
+    return () => { active = false; };
+  }, [cardPhotoUrl]);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
