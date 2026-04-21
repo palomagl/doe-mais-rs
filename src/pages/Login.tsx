@@ -57,7 +57,7 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Hero top */}
-      <div className="bg-primary text-primary-foreground px-6 pt-16 pb-12 rounded-b-[2.5rem] relative overflow-hidden">
+      <div className="bg-primary text-primary-foreground px-page pt-12 sm:pt-16 pb-12 rounded-b-[2.5rem] relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
         <div className="absolute bottom-4 -left-8 w-24 h-24 bg-white/5 rounded-full" />
         <div className="relative z-10 flex flex-col items-center">
@@ -72,7 +72,7 @@ const Login = () => {
       </div>
 
       {/* Form */}
-      <div className="flex-1 px-6 pt-8 pb-12 flex flex-col">
+      <div className="flex-1 px-page pt-8 pb-12 flex flex-col container-mobile-lg w-full">
         <h2 className="text-xl font-bold text-foreground mb-1">
           {isSignUp ? "Crie sua conta" : "Bem-vindo de volta"}
         </h2>

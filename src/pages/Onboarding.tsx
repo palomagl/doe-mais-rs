@@ -28,7 +28,7 @@ const Onboarding = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Hero */}
-      <div className="bg-primary text-primary-foreground px-6 pt-16 pb-14 rounded-b-[2.5rem] relative overflow-hidden">
+      <div className="bg-primary text-primary-foreground px-page pt-12 sm:pt-16 pb-14 rounded-b-[2.5rem] relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
         <div className="absolute bottom-4 -left-8 w-24 h-24 bg-white/5 rounded-full" />
         <div className="relative z-10 flex flex-col items-center">
@@ -43,7 +43,7 @@ const Onboarding = () => {
       </div>
 
       {/* Options */}
-      <div className="flex-1 px-6 pt-8 pb-12 flex flex-col">
+      <div className="flex-1 px-page pt-8 pb-12 flex flex-col container-mobile-lg w-full">
         <p className="text-sm text-muted-foreground mb-6 text-center">Como podemos te ajudar?</p>
 
         <div className="flex flex-col gap-4 max-w-sm mx-auto w-full">
