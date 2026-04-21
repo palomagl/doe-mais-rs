@@ -40,8 +40,11 @@ export type Database = {
       }
       profiles: {
         Row: {
+          birth_date: string | null
           blood_type: string
+          card_photo_url: string | null
           city: string
+          cpf: string | null
           created_at: string
           id: string
           is_existing_donor: boolean
@@ -53,8 +56,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          birth_date?: string | null
           blood_type?: string
+          card_photo_url?: string | null
           city?: string
+          cpf?: string | null
           created_at?: string
           id?: string
           is_existing_donor?: boolean
@@ -66,8 +72,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          birth_date?: string | null
           blood_type?: string
+          card_photo_url?: string | null
           city?: string
+          cpf?: string | null
           created_at?: string
           id?: string
           is_existing_donor?: boolean
@@ -97,6 +106,27 @@ export type Database = {
           id?: string
           redeemed_at?: string
           reward_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_id: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          id?: string
+          unlocked_at?: string
           user_id?: string
         }
         Relationships: []

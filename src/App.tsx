@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import BloodCenters from "./pages/BloodCenters";
 import Rewards from "./pages/Rewards";
 import Profile from "./pages/Profile";
+import Benefits from "./pages/Benefits";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
           <Route path="/centers" element={<ProtectedRoute><BloodCenters /></ProtectedRoute>} />
           <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/benefits" element={<ProtectedRoute><Benefits /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

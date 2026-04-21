@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, MapPin, Gift, User } from "lucide-react";
+import { Home, MapPin, Gift, User, Scale } from "lucide-react";
 
 const BottomNav = () => {
   const navigate = useNavigate();
@@ -9,6 +9,7 @@ const BottomNav = () => {
     { path: "/dashboard", icon: Home, label: "Início" },
     { path: "/centers", icon: MapPin, label: "Locais" },
     { path: "/rewards", icon: Gift, label: "Prêmios" },
+    { path: "/benefits", icon: Scale, label: "Direitos" },
     { path: "/profile", icon: User, label: "Perfil" },
   ];
 
