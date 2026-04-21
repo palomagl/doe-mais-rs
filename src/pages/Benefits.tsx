@@ -7,8 +7,8 @@ const Benefits = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="bg-primary text-primary-foreground px-6 pt-10 pb-8 rounded-b-[2rem] relative overflow-hidden">
+    <div className="min-h-screen bg-background pb-nav">
+      <div className="bg-primary text-primary-foreground px-page pt-10 pb-8 rounded-b-[2rem] relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
         <button
           onClick={() => navigate(-1)}
@@ -22,7 +22,7 @@ const Benefits = () => {
         </div>
       </div>
 
-      <div className="px-5 pt-5 flex flex-col gap-3">
+      <div className="px-page pt-5 container-mobile-lg flex flex-col gap-3">
         {DONOR_BENEFITS.map((b) => (
           <div key={b.id} className="rounded-2xl bg-card border border-border p-4 flex gap-3">
             <div className="text-3xl shrink-0">{b.icon}</div>
