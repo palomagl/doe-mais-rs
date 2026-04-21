@@ -34,8 +34,8 @@ const BloodCenters = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="bg-primary text-primary-foreground px-6 pt-10 pb-8 rounded-b-[2rem] relative overflow-hidden">
+    <div className="min-h-screen bg-background pb-nav">
+      <div className="bg-primary text-primary-foreground px-page pt-10 pb-8 rounded-b-[2rem] relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
         <div className="relative z-10">
           <h1 className="text-2xl font-bold">Hemocentros 📍</h1>
@@ -45,7 +45,7 @@ const BloodCenters = () => {
         </div>
       </div>
 
-      <div className="px-5 -mt-4 relative z-10">
+      <div className="px-page -mt-4 relative z-10 container-mobile-lg">
         <div className="relative mb-4">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input

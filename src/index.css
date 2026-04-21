@@ -102,6 +102,10 @@
   input, textarea, select {
     font-size: 16px !important;
   }
+
+  /* Safe areas for notched devices */
+  .safe-top { padding-top: env(safe-area-inset-top); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 }
 
 /* Hide scrollbar for filter chips */
@@ -118,3 +122,37 @@
   from { transform: scale(0.8); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+/* Fluid responsive utilities ---------------------------------------- */
+@layer utilities {
+  /* Horizontal page padding that adapts to viewport */
+  .px-page {
+    padding-left: clamp(1rem, 4vw, 1.5rem);
+    padding-right: clamp(1rem, 4vw, 1.5rem);
+  }
+  /* Constrain content width on tablets/desktop while keeping mobile feel */
+  .container-mobile {
+    width: 100%;
+    max-width: 28rem; /* ~448px */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .container-mobile-lg {
+    width: 100%;
+    max-width: 32rem; /* ~512px */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  /* Ensure bottom-nav clearance + safe area */
+  .pb-nav {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Tap targets minimum 44px on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  button, a {
+    min-height: 36px;
+  }
+}
+

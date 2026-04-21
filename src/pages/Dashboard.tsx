@@ -153,28 +153,28 @@ const Dashboard = () => {
   const earnedCount = badgesEarned(donationCount).length;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-nav">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-6 pt-10 pb-10 rounded-b-[2rem] relative overflow-hidden">
+      <div className="bg-primary text-primary-foreground px-page pt-10 pb-10 rounded-b-[2rem] relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
         <div className="absolute bottom-2 -left-6 w-20 h-20 bg-white/5 rounded-full" />
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-3">
-            <img src={logo} alt="Doe+ RS" width={36} height={36} className="rounded-xl" />
-            <div>
+        <div className="flex items-center justify-between gap-3 relative z-10 container-mobile-lg mx-auto">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <img src={logo} alt="Doe+ RS" width={36} height={36} className="rounded-xl shrink-0" />
+            <div className="min-w-0">
               <p className="text-xs opacity-80">Olá,</p>
-              <p className="font-bold text-lg">{profile.name.split(" ")[0]} 👋</p>
+              <p className="font-bold text-base sm:text-lg truncate">{profile.name.split(" ")[0]} 👋</p>
             </div>
           </div>
           {profile.blood_type && (
-            <span className="bg-white/20 backdrop-blur text-sm font-bold px-3 py-1.5 rounded-full">
+            <span className="bg-white/20 backdrop-blur text-sm font-bold px-3 py-1.5 rounded-full shrink-0">
               {profile.blood_type}
             </span>
           )}
         </div>
       </div>
 
-      <div className="px-5 -mt-6 relative z-10 flex flex-col gap-5">
+      <div className="px-page -mt-6 relative z-10 container-mobile-lg flex flex-col gap-5">
         {/* Impact */}
         <ImpactCounter donationCount={donationCount} />
 

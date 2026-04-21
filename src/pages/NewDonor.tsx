@@ -58,13 +58,13 @@ const NewDonor = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="px-6 pt-6 pb-4">
+      <div className="px-page pt-6 pb-4 container-mobile-lg w-full">
         <button onClick={() => navigate("/")} className="text-muted-foreground flex items-center gap-1 text-sm active:scale-95">
           <ArrowLeft className="w-4 h-4" /> Voltar
         </button>
       </div>
 
-      <div className="px-6 pb-8 flex flex-col flex-1">
+      <div className="px-page pb-8 flex flex-col flex-1 container-mobile-lg w-full">
         <h1 className="text-2xl font-bold text-foreground mb-1">Quero doar 🩸</h1>
         <p className="text-muted-foreground text-sm mb-6">
           Vamos ver se você pode doar. Primeiro, nos conte sobre você.
