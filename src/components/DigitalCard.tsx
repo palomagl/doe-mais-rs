@@ -110,7 +110,7 @@ const DigitalCard = ({ userId, name, bloodType, cpf, cardPhotoUrl, onPhotoChange
               <button
                 onClick={handleRemove}
                 disabled={uploading}
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center active:scale-95"
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-foreground/60 backdrop-blur flex items-center justify-center active:scale-95"
                 aria-label="Remover foto"
               >
                 <Trash2 className="w-4 h-4 text-white" />

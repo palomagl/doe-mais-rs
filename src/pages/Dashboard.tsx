@@ -1,13 +1,17 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, Droplets, AlertTriangle, Plus, Gift, Calendar, TrendingUp } from "lucide-react";
+import { MapPin, Clock, Droplets, AlertTriangle, Plus, Gift, Calendar, TrendingUp, Award, Scale, ChevronRight } from "lucide-react";
 import { POINTS_PER_DONATION } from "@/data/rewards";
+import { BADGES, badgesEarned } from "@/data/badges";
+import { celebrateDonation, celebrateBadge } from "@/lib/celebrate";
 import { differenceInDays, format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
+import ImpactCounter from "@/components/ImpactCounter";
+import BadgeGrid from "@/components/BadgeGrid";
 import logo from "@/assets/logo-doers.png";
 
 interface Profile {
@@ -25,8 +29,9 @@ interface Donation {
   location: string;
 }
 
-const DONATION_INTERVAL_DAYS_M = 60;
-const DONATION_INTERVAL_DAYS_F = 90;
+// Per spec: Male 90 / Female 60 days
+const DONATION_INTERVAL_DAYS_M = 90;
+const DONATION_INTERVAL_DAYS_F = 60;
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -34,6 +39,7 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [unlockedBadges, setUnlockedBadges] = useState<Set<string>>(new Set());
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [error, setError] = useState(false);
 
@@ -47,19 +53,17 @@ const Dashboard = () => {
         .maybeSingle();
 
       if (pErr) throw pErr;
-      if (!p) {
-        navigate("/", { replace: true });
-        return;
-      }
+      if (!p) { navigate("/", { replace: true }); return; }
       setProfile(p);
 
       const { data: d } = await supabase
-        .from("donations")
-        .select("id, date, location")
-        .eq("user_id", user.id)
-        .order("date", { ascending: false });
-
+        .from("donations").select("id, date, location")
+        .eq("user_id", user.id).order("date", { ascending: false });
       if (d) setDonations(d);
+
+      const { data: b } = await supabase
+        .from("user_badges").select("badge_id").eq("user_id", user.id);
+      if (b) setUnlockedBadges(new Set(b.map((x) => x.badge_id)));
     } catch {
       setError(true);
     }
@@ -72,7 +76,6 @@ const Dashboard = () => {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
         <AlertTriangle className="w-10 h-10 text-destructive mb-4" />
         <p className="text-foreground font-bold mb-2">Erro ao carregar dados</p>
-        <p className="text-sm text-muted-foreground mb-4">Verifique sua conexão e tente novamente.</p>
         <button onClick={() => { setError(false); load(); }} className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold">
           Tentar novamente
         </button>
@@ -93,6 +96,22 @@ const Dashboard = () => {
   const nextDate = lastDate ? addDays(lastDate, interval) : null;
   const daysLeft = nextDate ? differenceInDays(nextDate, new Date()) : 0;
   const canDonate = !lastDate || daysLeft <= 0;
+  const donationCount = donations.length;
+
+  const checkAndUnlockBadges = async (newCount: number) => {
+    const earned = badgesEarned(newCount);
+    const newOnes = earned.filter((b) => !unlockedBadges.has(b.id));
+    if (newOnes.length === 0) return;
+    const inserts = newOnes.map((b) => ({ user_id: user!.id, badge_id: b.id }));
+    await supabase.from("user_badges").insert(inserts);
+    const next = new Set(unlockedBadges);
+    newOnes.forEach((b) => next.add(b.id));
+    setUnlockedBadges(next);
+    setTimeout(() => {
+      celebrateBadge();
+      toast({ title: `${newOnes[0].icon} Nova conquista!`, description: newOnes[0].title });
+    }, 800);
+  };
 
   const addDonation = async () => {
     if (!user || loadingAdd) return;
@@ -108,22 +127,22 @@ const Dashboard = () => {
     const today = new Date().toISOString().split("T")[0];
     try {
       const { error: insErr } = await supabase.from("donations").insert({
-        user_id: user.id,
-        date: today,
-        location: "Hemocentro RS",
+        user_id: user.id, date: today, location: "Hemocentro RS",
       });
       if (insErr) throw insErr;
 
       const newPoints = profile.reward_points + POINTS_PER_DONATION;
       const { error: updErr } = await supabase
-        .from("profiles")
-        .update({ last_donation: today, reward_points: newPoints })
+        .from("profiles").update({ last_donation: today, reward_points: newPoints })
         .eq("user_id", user.id);
       if (updErr) throw updErr;
 
+      const newDonations = [{ id: crypto.randomUUID(), date: today, location: "Hemocentro RS" }, ...donations];
       setProfile({ ...profile, last_donation: today, reward_points: newPoints });
-      setDonations([{ id: crypto.randomUUID(), date: today, location: "Hemocentro RS" }, ...donations]);
-      toast({ title: "Doação registrada! 🎉", description: `+${POINTS_PER_DONATION} pontos adicionados!` });
+      setDonations(newDonations);
+      celebrateDonation();
+      toast({ title: "Doação registrada! 🎉", description: `+${POINTS_PER_DONATION} pontos · 4 vidas salvas!` });
+      checkAndUnlockBadges(newDonations.length);
     } catch {
       toast({ title: "Erro ao registrar", description: "Tente novamente.", variant: "destructive" });
     } finally {
@@ -131,13 +150,12 @@ const Dashboard = () => {
     }
   };
 
-  const donationCount = donations.length;
-  const level = donationCount >= 10 ? "Herói" : donationCount >= 5 ? "Veterano" : donationCount >= 1 ? "Doador" : "Iniciante";
+  const earnedCount = badgesEarned(donationCount).length;
 
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-6 pt-10 pb-8 rounded-b-[2rem] relative overflow-hidden">
+      <div className="bg-primary text-primary-foreground px-6 pt-10 pb-10 rounded-b-[2rem] relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
         <div className="absolute bottom-2 -left-6 w-20 h-20 bg-white/5 rounded-full" />
         <div className="flex items-center justify-between relative z-10">
@@ -156,12 +174,13 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="px-5 -mt-4 relative z-10">
-        {/* Status Card */}
-        <div className={`rounded-2xl p-5 mb-5 shadow-lg ${
-          canDonate
-            ? "bg-card border-2 border-primary"
-            : "bg-card border border-border"
+      <div className="px-5 -mt-6 relative z-10 flex flex-col gap-5">
+        {/* Impact */}
+        <ImpactCounter donationCount={donationCount} />
+
+        {/* Status */}
+        <div className={`rounded-2xl p-5 shadow-md ${
+          canDonate ? "bg-card border-2 border-primary" : "bg-card border border-border"
         }`}>
           {canDonate ? (
             <div className="flex items-center gap-4">
@@ -169,7 +188,7 @@ const Dashboard = () => {
                 <Droplets className="w-6 h-6 text-primary" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-bold text-foreground">Você pode doar! 🩸</h2>
+                <h2 className="text-lg font-bold text-foreground">Você está apto a doar! 🩸</h2>
                 <p className="text-sm text-muted-foreground">Encontre um hemocentro perto de você.</p>
               </div>
             </div>
@@ -179,17 +198,17 @@ const Dashboard = () => {
                 <Clock className="w-6 h-6 text-[hsl(var(--warning))]" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-bold text-foreground">Aguarde {daysLeft} dias</h2>
+                <h2 className="text-lg font-bold text-foreground">Período de espera</h2>
                 <p className="text-sm text-muted-foreground">
-                  Próxima: {nextDate && format(nextDate, "dd 'de' MMMM", { locale: ptBR })}
+                  Faltam {daysLeft} dias · {nextDate && format(nextDate, "dd 'de' MMM", { locale: ptBR })}
                 </p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-3">
           <div className="rounded-2xl bg-card border border-border p-3 text-center">
             <Calendar className="w-4 h-4 text-primary mx-auto mb-1" />
             <p className="text-lg font-bold text-foreground">{donationCount}</p>
@@ -201,14 +220,14 @@ const Dashboard = () => {
             <p className="text-[10px] text-muted-foreground">Pontos</p>
           </div>
           <div className="rounded-2xl bg-card border border-border p-3 text-center">
-            <TrendingUp className="w-4 h-4 text-primary mx-auto mb-1" />
-            <p className="text-lg font-bold text-foreground">{level}</p>
-            <p className="text-[10px] text-muted-foreground">Nível</p>
+            <Award className="w-4 h-4 text-primary mx-auto mb-1" />
+            <p className="text-lg font-bold text-foreground">{earnedCount}/{BADGES.length}</p>
+            <p className="text-[10px] text-muted-foreground">Conquistas</p>
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        {/* Quick actions */}
+        <div className="grid grid-cols-3 gap-3">
           <button
             onClick={() => navigate("/centers")}
             className="flex flex-col items-center gap-2 rounded-2xl bg-card border border-border p-4 hover:border-primary transition-all active:scale-[0.97]"
@@ -225,14 +244,8 @@ const Dashboard = () => {
               canDonate ? "border-primary/50 hover:border-primary" : "border-border opacity-60"
             }`}
           >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              canDonate ? "bg-primary/10" : "bg-muted"
-            }`}>
-              {loadingAdd ? (
-                <Droplets className="w-5 h-5 text-primary animate-pulse" />
-              ) : (
-                <Plus className="w-5 h-5 text-primary" />
-              )}
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${canDonate ? "bg-primary/10" : "bg-muted"}`}>
+              {loadingAdd ? <Droplets className="w-5 h-5 text-primary animate-pulse" /> : <Plus className="w-5 h-5 text-primary" />}
             </div>
             <span className="text-xs font-semibold text-foreground">Registrar</span>
           </button>
@@ -247,8 +260,32 @@ const Dashboard = () => {
           </button>
         </div>
 
+        {/* Badges */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold text-foreground">Conquistas</h3>
+            <span className="text-xs text-muted-foreground">{earnedCount} desbloqueadas</span>
+          </div>
+          <BadgeGrid donationCount={donationCount} compact />
+        </div>
+
+        {/* Benefits link */}
+        <button
+          onClick={() => navigate("/benefits")}
+          className="rounded-2xl bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-950/30 dark:to-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 flex items-center gap-3 active:scale-[0.98] transition-all"
+        >
+          <div className="w-10 h-10 rounded-xl bg-amber-200 dark:bg-amber-800 flex items-center justify-center shrink-0">
+            <Scale className="w-5 h-5 text-amber-700 dark:text-amber-200" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-sm font-bold text-foreground">Seus benefícios legais</p>
+            <p className="text-xs text-muted-foreground">Meia-entrada, isenções e mais</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+        </button>
+
         {/* Alert */}
-        <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4 flex items-start gap-3 mb-5">
+        <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-semibold text-foreground">Estoque baixo: O-</p>
@@ -257,31 +294,32 @@ const Dashboard = () => {
         </div>
 
         {/* History */}
-        <h3 className="font-bold text-foreground mb-3">Histórico de doações</h3>
-        {donations.length === 0 ? (
-          <div className="rounded-2xl bg-card border border-border p-8 text-center">
-            <Droplets className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">Nenhuma doação registrada ainda.</p>
-            <p className="text-xs text-muted-foreground mt-1">Registre sua primeira doação acima!</p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {donations.map((d) => (
-              <div key={d.id} className="flex items-center gap-4 rounded-xl bg-card border border-border p-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Droplets className="w-5 h-5 text-primary" />
+        <div>
+          <h3 className="font-bold text-foreground mb-3">Histórico de doações</h3>
+          {donations.length === 0 ? (
+            <div className="rounded-2xl bg-card border border-border p-8 text-center">
+              <Droplets className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">Nenhuma doação registrada ainda.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {donations.map((d) => (
+                <div key={d.id} className="flex items-center gap-4 rounded-xl bg-card border border-border p-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Droplets className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {format(new Date(d.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{d.location}</p>
+                  </div>
+                  <span className="text-xs text-primary font-bold shrink-0">+{POINTS_PER_DONATION}pts</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">
-                    {format(new Date(d.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">{d.location}</p>
-                </div>
-                <span className="text-xs text-primary font-bold shrink-0">+{POINTS_PER_DONATION}pts</span>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <BottomNav />

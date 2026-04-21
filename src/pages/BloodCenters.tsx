@@ -1,36 +1,52 @@
-import { useState } from "react";
-import { Search, MapPin, Phone, Clock, ExternalLink } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Search, MapPin, Phone, Clock, ExternalLink, Navigation, AlertCircle } from "lucide-react";
 import { bloodCenters } from "@/data/bloodCenters";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { haversineKm, formatDistance } from "@/lib/geo";
 import BottomNav from "@/components/BottomNav";
 
 const BloodCenters = () => {
   const [search, setSearch] = useState("");
+  const { lat, lng, loading: geoLoading, error: geoError, request } = useGeolocation(true);
 
-  const filtered = bloodCenters.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.city.toLowerCase().includes(search.toLowerCase())
-  );
+  const sorted = useMemo(() => {
+    const list = bloodCenters.filter(
+      (c) =>
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        c.city.toLowerCase().includes(search.toLowerCase())
+    );
+    if (lat != null && lng != null) {
+      return list
+        .map((c) => ({ ...c, distance: haversineKm(lat, lng, c.lat, c.lng) }))
+        .sort((a, b) => a.distance - b.distance);
+    }
+    return list.map((c) => ({ ...c, distance: undefined as number | undefined }));
+  }, [search, lat, lng]);
 
   const openMaps = (center: typeof bloodCenters[0]) => {
-    const url = `https://www.google.com/maps/search/?api=1&query=${center.lat},${center.lng}`;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${center.lat},${center.lng}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const openWaze = (center: typeof bloodCenters[0]) => {
+    const url = `https://waze.com/ul?ll=${center.lat},${center.lng}&navigate=yes`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
       <div className="bg-primary text-primary-foreground px-6 pt-10 pb-8 rounded-b-[2rem] relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
         <div className="relative z-10">
           <h1 className="text-2xl font-bold">Hemocentros 📍</h1>
-          <p className="text-sm opacity-80 mt-1">Encontre o mais próximo no RS</p>
+          <p className="text-sm opacity-80 mt-1">
+            {lat ? "Ordenados por distância de você" : "Encontre o mais próximo no RS"}
+          </p>
         </div>
       </div>
 
       <div className="px-5 -mt-4 relative z-10">
-        {/* Search */}
-        <div className="relative mb-5">
+        <div className="relative mb-4">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
@@ -41,29 +57,38 @@ const BloodCenters = () => {
           />
         </div>
 
-        {/* Count */}
+        {geoError && (
+          <button
+            onClick={request}
+            className="w-full rounded-2xl bg-muted/50 border border-border p-3 mb-4 flex items-center gap-2 text-left active:scale-[0.99]"
+          >
+            <AlertCircle className="w-4 h-4 text-muted-foreground shrink-0" />
+            <p className="text-xs text-muted-foreground flex-1">{geoError} — toque para tentar novamente</p>
+          </button>
+        )}
+
         <p className="text-xs text-muted-foreground mb-3">
-          {filtered.length} hemocentro{filtered.length !== 1 ? "s" : ""} encontrado{filtered.length !== 1 ? "s" : ""}
+          {sorted.length} hemocentro{sorted.length !== 1 ? "s" : ""}
+          {geoLoading ? " · localizando..." : ""}
         </p>
 
-        {/* List */}
         <div className="flex flex-col gap-3">
-          {filtered.map((center) => (
+          {sorted.map((center) => (
             <div
               key={center.id}
               className="rounded-2xl bg-card border border-border p-5 hover:border-primary transition-all"
             >
               <div className="flex items-start justify-between gap-2 mb-3">
-                <h3 className="font-bold text-foreground text-sm leading-snug flex-1">{center.name}</h3>
-                <button
-                  onClick={() => openMaps(center)}
-                  className="shrink-0 w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors active:scale-95"
-                  aria-label="Abrir no Google Maps"
-                >
-                  <ExternalLink className="w-4 h-4 text-primary" />
-                </button>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-foreground text-sm leading-snug">{center.name}</h3>
+                  {center.distance !== undefined && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary mt-1">
+                      <Navigation className="w-3 h-3" /> {formatDistance(center.distance)} de você
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 mb-3">
                 <div className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                   <p className="text-xs text-muted-foreground">{center.address} — {center.city}</p>
@@ -77,13 +102,26 @@ const BloodCenters = () => {
                   <p className="text-xs text-muted-foreground">{center.hours}</p>
                 </div>
               </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => openMaps(center)}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-primary/10 text-primary text-xs font-semibold py-2.5 active:scale-[0.97]"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Google Maps
+                </button>
+                <button
+                  onClick={() => openWaze(center)}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-accent text-foreground text-xs font-semibold py-2.5 active:scale-[0.97]"
+                >
+                  <Navigation className="w-3.5 h-3.5" /> Waze
+                </button>
+              </div>
             </div>
           ))}
-          {filtered.length === 0 && (
+          {sorted.length === 0 && (
             <div className="text-center py-12">
               <MapPin className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-muted-foreground text-sm">Nenhum hemocentro encontrado.</p>
-              <p className="text-xs text-muted-foreground mt-1">Tente buscar por outra cidade.</p>
             </div>
           )}
         </div>
