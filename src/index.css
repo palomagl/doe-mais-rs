@@ -123,6 +123,24 @@
   to { transform: scale(1); opacity: 1; }
 }
 
+/* Page fade/slide-in for smoother route transitions */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-page-in {
+  animation: page-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Subtle pulse for live indicators */
+@keyframes soft-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.animate-soft-pulse {
+  animation: soft-pulse 2s ease-in-out infinite;
+}
+
 /* Fluid responsive utilities ---------------------------------------- */
 @layer utilities {
   /* Horizontal page padding that adapts to viewport */

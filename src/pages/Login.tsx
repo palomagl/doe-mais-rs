@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,11 @@ const Login = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email: email.trim(), password });
+        const { error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/` },
+        });
         if (error) throw error;
         toast({ title: "Conta criada! 🎉", description: "Bem-vindo ao Doe+ RS!" });
         navigate("/");
@@ -118,8 +122,17 @@ const Login = () => {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-            {isSignUp && (
+            {isSignUp ? (
               <p className="text-xs text-muted-foreground">Mínimo de 6 caracteres</p>
+            ) : (
+              <div className="flex justify-end">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-primary font-semibold hover:underline mt-0.5"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
             )}
           </div>
 

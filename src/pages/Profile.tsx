@@ -83,7 +83,9 @@ const Profile = () => {
     else toast({ title: "Perfil atualizado! ✅" });
   };
 
+  const [loggingOut, setLoggingOut] = useState(false);
   const handleLogout = async () => {
+    setLoggingOut(true);
     await supabase.auth.signOut();
     navigate("/login");
   };
@@ -97,7 +99,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-nav">
+    <div className="min-h-screen bg-background pb-nav animate-page-in">
       <div className="bg-primary text-primary-foreground px-page pt-10 pb-10 rounded-b-[2rem] relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
         <div className="relative z-10">
@@ -264,9 +266,10 @@ const Profile = () => {
               </button>
               <button
                 onClick={handleLogout}
-                className="flex-1 py-2.5 rounded-xl bg-destructive text-destructive-foreground text-sm font-medium active:scale-[0.97]"
+                disabled={loggingOut}
+                className="flex-1 py-2.5 rounded-xl bg-destructive text-destructive-foreground text-sm font-medium active:scale-[0.97] disabled:opacity-60 flex items-center justify-center gap-2"
               >
-                Sair
+                {loggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sair"}
               </button>
             </div>
           </div>
