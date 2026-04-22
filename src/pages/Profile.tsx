@@ -83,7 +83,9 @@ const Profile = () => {
     else toast({ title: "Perfil atualizado! ✅" });
   };
 
+  const [loggingOut, setLoggingOut] = useState(false);
   const handleLogout = async () => {
+    setLoggingOut(true);
     await supabase.auth.signOut();
     navigate("/login");
   };
@@ -264,9 +266,10 @@ const Profile = () => {
               </button>
               <button
                 onClick={handleLogout}
-                className="flex-1 py-2.5 rounded-xl bg-destructive text-destructive-foreground text-sm font-medium active:scale-[0.97]"
+                disabled={loggingOut}
+                className="flex-1 py-2.5 rounded-xl bg-destructive text-destructive-foreground text-sm font-medium active:scale-[0.97] disabled:opacity-60 flex items-center justify-center gap-2"
               >
-                Sair
+                {loggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sair"}
               </button>
             </div>
           </div>
