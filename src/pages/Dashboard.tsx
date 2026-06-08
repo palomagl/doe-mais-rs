@@ -12,7 +12,9 @@ import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import ImpactCounter from "@/components/ImpactCounter";
 import BadgeGrid from "@/components/BadgeGrid";
+import ShareButton from "@/components/ShareButton";
 import logo from "@/assets/logo-doers.png";
+
 
 interface Profile {
   name: string;
