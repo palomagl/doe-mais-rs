@@ -85,6 +85,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
+    background-image:
+      radial-gradient(1200px 600px at 100% -10%, hsl(var(--primary) / 0.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, hsl(var(--primary) / 0.05), transparent 60%);
+    background-attachment: fixed;
   }
 
   /* Mobile-first: prevent horizontal scroll */
@@ -96,6 +100,7 @@
   /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Better input styling on iOS */
@@ -106,7 +111,13 @@
   /* Safe areas for notched devices */
   .safe-top { padding-top: env(safe-area-inset-top); }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+  /* Tighter type rhythm on very small phones */
+  @media (max-width: 360px) {
+    html { font-size: 15px; }
+  }
 }
+
 
 /* Hide scrollbar for filter chips */
 .scrollbar-hide {
@@ -145,25 +156,38 @@
 @layer utilities {
   /* Horizontal page padding that adapts to viewport */
   .px-page {
-    padding-left: clamp(1rem, 4vw, 1.5rem);
-    padding-right: clamp(1rem, 4vw, 1.5rem);
+    padding-left: clamp(0.875rem, 4vw, 1.5rem);
+    padding-right: clamp(0.875rem, 4vw, 1.5rem);
   }
   /* Constrain content width on tablets/desktop while keeping mobile feel */
   .container-mobile {
     width: 100%;
-    max-width: 28rem; /* ~448px */
+    max-width: 28rem;
     margin-left: auto;
     margin-right: auto;
   }
   .container-mobile-lg {
     width: 100%;
-    max-width: 32rem; /* ~512px */
+    max-width: 32rem;
     margin-left: auto;
     margin-right: auto;
   }
-  /* Ensure bottom-nav clearance + safe area */
+  /* Bottom-nav clearance + safe area */
   .pb-nav {
-    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(5.25rem + env(safe-area-inset-bottom));
+  }
+  /* Soft elevated card shadow tuned for mobile */
+  .shadow-soft {
+    box-shadow: 0 1px 2px hsl(var(--foreground) / 0.04), 0 8px 24px -12px hsl(var(--primary) / 0.12);
+  }
+  .shadow-soft-lg {
+    box-shadow: 0 2px 4px hsl(var(--foreground) / 0.05), 0 16px 40px -16px hsl(var(--primary) / 0.22);
+  }
+  /* Glass effect for header overlays */
+  .glass {
+    background: hsl(var(--card) / 0.7);
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
   }
 }
 
@@ -173,4 +197,5 @@
     min-height: 36px;
   }
 }
+
 

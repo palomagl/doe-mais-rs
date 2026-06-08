@@ -15,7 +15,7 @@ const BottomNav = () => {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border z-50"
+      className="fixed bottom-0 left-0 right-0 glass border-t border-border/60 z-50 shadow-[0_-8px_24px_-12px_hsl(var(--primary)/0.18)]"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="flex items-stretch justify-around max-w-lg mx-auto px-1">
@@ -25,17 +25,20 @@ const BottomNav = () => {
             <button
               key={tab.path}
               onClick={() => navigate(tab.path)}
-              className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-xl transition-all active:scale-95 ${
+              className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl transition-all active:scale-95 ${
                 isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
               aria-label={tab.label}
               aria-current={isActive ? "page" : undefined}
             >
-              <tab.icon className={`w-[18px] h-[18px] sm:w-5 sm:h-5 ${isActive ? "stroke-[2.5]" : ""}`} />
-              <span className={`text-[9px] sm:text-[10px] font-semibold leading-tight truncate max-w-full ${isActive ? "text-primary" : ""}`}>
+              <div className={`flex items-center justify-center rounded-xl transition-all ${
+                isActive ? "bg-primary/12 w-9 h-9" : "w-9 h-9"
+              }`}>
+                <tab.icon className={`w-[18px] h-[18px] ${isActive ? "stroke-[2.5]" : ""}`} />
+              </div>
+              <span className={`text-[9.5px] font-semibold leading-none truncate max-w-full ${isActive ? "text-primary" : ""}`}>
                 {tab.label}
               </span>
-              {isActive && <div className="w-1 h-1 rounded-full bg-primary" />}
             </button>
           );
         })}
@@ -43,5 +46,6 @@ const BottomNav = () => {
     </nav>
   );
 };
+
 
 export default BottomNav;

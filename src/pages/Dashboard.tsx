@@ -155,28 +155,29 @@ const Dashboard = () => {
   const earnedCount = badgesEarned(donationCount).length;
 
   return (
-    <div className="min-h-screen bg-background pb-nav animate-page-in">
+    <div className="min-h-screen pb-nav animate-page-in">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-page pt-10 pb-10 rounded-b-[2rem] relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
-        <div className="absolute bottom-2 -left-6 w-20 h-20 bg-white/5 rounded-full" />
+      <div className="bg-gradient-to-br from-primary via-primary to-red-700 text-primary-foreground px-page pt-9 pb-12 rounded-b-[2rem] relative overflow-hidden shadow-soft-lg">
+        <div className="absolute -top-12 -right-10 w-44 h-44 bg-white/10 rounded-full blur-2xl" />
+        <div className="absolute bottom-0 -left-8 w-24 h-24 bg-white/10 rounded-full blur-xl" />
         <div className="flex items-center justify-between gap-3 relative z-10 container-mobile-lg mx-auto">
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <img src={logo} alt="Doe+ RS" width={36} height={36} className="rounded-xl shrink-0" />
+            <img src={logo} alt="Doe+ RS" width={36} height={36} className="rounded-xl shrink-0 bg-white/15 p-1 backdrop-blur" />
             <div className="min-w-0">
-              <p className="text-xs opacity-80">Olá,</p>
-              <p className="font-bold text-base sm:text-lg truncate">{profile.name.split(" ")[0]} 👋</p>
+              <p className="text-[11px] opacity-80 leading-none">Olá,</p>
+              <p className="font-extrabold text-[17px] truncate mt-1">{profile.name.split(" ")[0]} 👋</p>
             </div>
           </div>
           {profile.blood_type && (
-            <span className="bg-white/20 backdrop-blur text-sm font-bold px-3 py-1.5 rounded-full shrink-0">
+            <span className="bg-white/20 backdrop-blur text-sm font-extrabold px-3 py-1.5 rounded-full shrink-0 ring-1 ring-white/30">
               {profile.blood_type}
             </span>
           )}
         </div>
       </div>
 
-      <div className="px-page -mt-6 relative z-10 container-mobile-lg flex flex-col gap-5">
+      <div className="px-page -mt-7 relative z-10 container-mobile-lg flex flex-col gap-4">
+
         {/* Impact */}
         <ImpactCounter donationCount={donationCount} />
 
@@ -210,57 +211,59 @@ const Dashboard = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-2xl bg-card border border-border p-3 text-center">
+        <div className="grid grid-cols-3 gap-2.5">
+          <div className="rounded-2xl bg-card border border-border p-3 text-center shadow-soft">
             <Calendar className="w-4 h-4 text-primary mx-auto mb-1" />
-            <p className="text-lg font-bold text-foreground">{donationCount}</p>
-            <p className="text-[10px] text-muted-foreground">Doações</p>
+            <p className="text-xl font-extrabold text-foreground leading-none">{donationCount}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">Doações</p>
           </div>
-          <div className="rounded-2xl bg-card border border-border p-3 text-center">
+          <div className="rounded-2xl bg-card border border-border p-3 text-center shadow-soft">
             <Gift className="w-4 h-4 text-primary mx-auto mb-1" />
-            <p className="text-lg font-bold text-foreground">{profile.reward_points}</p>
-            <p className="text-[10px] text-muted-foreground">Pontos</p>
+            <p className="text-xl font-extrabold text-foreground leading-none">{profile.reward_points}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">Pontos</p>
           </div>
-          <div className="rounded-2xl bg-card border border-border p-3 text-center">
+          <div className="rounded-2xl bg-card border border-border p-3 text-center shadow-soft">
             <Award className="w-4 h-4 text-primary mx-auto mb-1" />
-            <p className="text-lg font-bold text-foreground">{earnedCount}/{BADGES.length}</p>
-            <p className="text-[10px] text-muted-foreground">Conquistas</p>
+            <p className="text-xl font-extrabold text-foreground leading-none">{earnedCount}<span className="text-xs text-muted-foreground font-bold">/{BADGES.length}</span></p>
+            <p className="text-[10px] text-muted-foreground mt-1">Conquistas</p>
           </div>
         </div>
 
+
         {/* Quick actions */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2.5">
           <button
             onClick={() => navigate("/centers")}
-            className="flex flex-col items-center gap-2 rounded-2xl bg-card border border-border p-4 hover:border-primary transition-all active:scale-[0.97]"
+            className="flex flex-col items-center gap-1.5 rounded-2xl bg-card border border-border p-3 hover:border-primary transition-all active:scale-[0.97] shadow-soft"
           >
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <MapPin className="w-5 h-5 text-primary" />
             </div>
-            <span className="text-xs font-semibold text-foreground">Hemocentros</span>
+            <span className="text-[11px] font-semibold text-foreground leading-tight text-center">Hemocentros</span>
           </button>
           <button
             onClick={addDonation}
             disabled={loadingAdd}
-            className={`flex flex-col items-center gap-2 rounded-2xl bg-card border p-4 transition-all active:scale-[0.97] ${
-              canDonate ? "border-primary/50 hover:border-primary" : "border-border opacity-60"
+            className={`flex flex-col items-center gap-1.5 rounded-2xl bg-card border p-3 transition-all active:scale-[0.97] shadow-soft ${
+              canDonate ? "border-primary/60 hover:border-primary" : "border-border opacity-60"
             }`}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${canDonate ? "bg-primary/10" : "bg-muted"}`}>
               {loadingAdd ? <Droplets className="w-5 h-5 text-primary animate-pulse" /> : <Plus className="w-5 h-5 text-primary" />}
             </div>
-            <span className="text-xs font-semibold text-foreground">Registrar</span>
+            <span className="text-[11px] font-semibold text-foreground leading-tight text-center">Registrar</span>
           </button>
           <button
             onClick={() => navigate("/rewards")}
-            className="flex flex-col items-center gap-2 rounded-2xl bg-card border border-border p-4 hover:border-primary transition-all active:scale-[0.97]"
+            className="flex flex-col items-center gap-1.5 rounded-2xl bg-card border border-border p-3 hover:border-primary transition-all active:scale-[0.97] shadow-soft"
           >
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Gift className="w-5 h-5 text-primary" />
             </div>
-            <span className="text-xs font-semibold text-foreground">Prêmios</span>
+            <span className="text-[11px] font-semibold text-foreground leading-tight text-center">Prêmios</span>
           </button>
         </div>
+
 
         {/* Badges */}
         <div>
