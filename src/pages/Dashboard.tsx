@@ -12,7 +12,9 @@ import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import ImpactCounter from "@/components/ImpactCounter";
 import BadgeGrid from "@/components/BadgeGrid";
+import ShareButton from "@/components/ShareButton";
 import logo from "@/assets/logo-doers.png";
+
 
 interface Profile {
   name: string;
@@ -290,7 +292,22 @@ const Dashboard = () => {
           <div>
             <p className="text-sm font-semibold text-foreground">Estoque baixo: O-</p>
             <p className="text-xs text-muted-foreground">O tipo O- está em falta no RS. Se puder, doe!</p>
-          </div>
+        </div>
+
+        {/* Invite friends */}
+        <div className="rounded-2xl bg-card border border-border p-5">
+          <h3 className="font-bold text-foreground mb-1">Convide amigos a doar 🩸</h3>
+          <p className="text-xs text-muted-foreground mb-4">
+            1 doação = até 4 vidas salvas. Compartilhe o app com quem você ama.
+          </p>
+          <ShareButton
+            variant="primary"
+            label="Convidar amigos"
+            text={`${profile.name?.split(" ")[0] || "Eu"} está usando o Doe+ RS para salvar vidas no Rio Grande do Sul. Vem doar comigo! 🩸`}
+          />
+        </div>
+
+
         </div>
 
         {/* History */}
