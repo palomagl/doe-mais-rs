@@ -7,6 +7,8 @@ import { Loader2, Save, LogOut, Shield, AlertTriangle, Award, Scale, ChevronRigh
 import BottomNav from "@/components/BottomNav";
 import DigitalCard from "@/components/DigitalCard";
 import BadgeGrid from "@/components/BadgeGrid";
+import ShareButton from "@/components/ShareButton";
+
 
 const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -120,6 +122,16 @@ const Profile = () => {
             onPhotoChange={setCardPhotoUrl}
           />
         )}
+
+        {/* Share */}
+        {form.name && (
+          <ShareButton
+            variant="outline"
+            label="Compartilhar minha conquista"
+            text={`Sou doador(a) de sangue ${form.blood_type || ""} cadastrado(a) no Doe+ RS — já ajudei a salvar vidas no RS! 🩸 Junte-se a mim:`}
+          />
+        )}
+
 
         {/* Conquistas */}
         <div className="rounded-2xl bg-card border border-border p-5">
