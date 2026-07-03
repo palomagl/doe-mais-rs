@@ -100,20 +100,8 @@ const Dashboard = () => {
   const canDonate = !lastDate || daysLeft <= 0;
   const donationCount = donations.length;
 
-  const checkAndUnlockBadges = async (newCount: number) => {
-    const earned = badgesEarned(newCount);
-    const newOnes = earned.filter((b) => !unlockedBadges.has(b.id));
-    if (newOnes.length === 0) return;
-    const inserts = newOnes.map((b) => ({ user_id: user!.id, badge_id: b.id }));
-    await supabase.from("user_badges").insert(inserts);
-    const next = new Set(unlockedBadges);
-    newOnes.forEach((b) => next.add(b.id));
-    setUnlockedBadges(next);
-    setTimeout(() => {
-      celebrateBadge();
-      toast({ title: `${newOnes[0].icon} Nova conquista!`, description: newOnes[0].title });
-    }, 800);
-  };
+
+
 
   const addDonation = async () => {
     if (!user || loadingAdd) return;
@@ -128,29 +116,46 @@ const Dashboard = () => {
     setLoadingAdd(true);
     const today = new Date().toISOString().split("T")[0];
     try {
-      const { error: insErr } = await supabase.from("donations").insert({
-        user_id: user.id, date: today, location: "Hemocentro RS",
+      const { error: rpcErr } = await supabase.rpc("record_donation", {
+        _location: "Hemocentro RS",
+        _date: today,
       });
-      if (insErr) throw insErr;
+      if (rpcErr) throw rpcErr;
 
-      const newPoints = profile.reward_points + POINTS_PER_DONATION;
-      const { error: updErr } = await supabase
-        .from("profiles").update({ last_donation: today, reward_points: newPoints })
-        .eq("user_id", user.id);
-      if (updErr) throw updErr;
+      // Refresh authoritative data from server
+      const [{ data: p }, { data: d }, { data: b }] = await Promise.all([
+        supabase.from("profiles")
+          .select("name, sex, blood_type, city, last_donation, reward_points")
+          .eq("user_id", user.id).maybeSingle(),
+        supabase.from("donations").select("id, date, location")
+          .eq("user_id", user.id).order("date", { ascending: false }),
+        supabase.from("user_badges").select("badge_id").eq("user_id", user.id),
+      ]);
+      if (p) setProfile(p);
+      if (d) setDonations(d);
 
-      const newDonations = [{ id: crypto.randomUUID(), date: today, location: "Hemocentro RS" }, ...donations];
-      setProfile({ ...profile, last_donation: today, reward_points: newPoints });
-      setDonations(newDonations);
+      const prevBadgeIds = unlockedBadges;
+      const nextIds = new Set((b ?? []).map((x) => x.badge_id));
+      setUnlockedBadges(nextIds);
+
       celebrateDonation();
       toast({ title: "Doação registrada! 🎉", description: `+${POINTS_PER_DONATION} pontos · 4 vidas salvas!` });
-      checkAndUnlockBadges(newDonations.length);
+
+      const newlyUnlocked = [...nextIds].filter((id) => !prevBadgeIds.has(id));
+      if (newlyUnlocked.length > 0) {
+        const badge = BADGES.find((x) => x.id === newlyUnlocked[0]);
+        setTimeout(() => {
+          celebrateBadge();
+          if (badge) toast({ title: `${badge.icon} Nova conquista!`, description: badge.title });
+        }, 800);
+      }
     } catch {
       toast({ title: "Erro ao registrar", description: "Tente novamente.", variant: "destructive" });
     } finally {
       setLoadingAdd(false);
     }
   };
+
 
   const earnedCount = badgesEarned(donationCount).length;
 

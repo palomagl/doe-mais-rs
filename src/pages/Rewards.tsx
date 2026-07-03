@@ -43,13 +43,12 @@ const Rewards = () => {
 
     setRedeeming(reward.id);
     try {
-      const newPoints = points - reward.pointsCost;
-      const { error: updErr } = await supabase.from("profiles").update({ reward_points: newPoints }).eq("user_id", user.id);
-      if (updErr) throw updErr;
-      const { error: insErr } = await supabase.from("redeemed_rewards").insert({ user_id: user.id, reward_id: reward.id });
-      if (insErr) throw insErr;
+      const { error } = await supabase.rpc("redeem_reward", { _reward_id: reward.id });
+      if (error) throw error;
 
-      setPoints(newPoints);
+      const { data: p } = await supabase
+        .from("profiles").select("reward_points").eq("user_id", user.id).maybeSingle();
+      if (p) setPoints(p.reward_points);
       setRedeemedIds([...redeemedIds, reward.id]);
       toast({ title: "Resgatado! 🎉", description: reward.title });
     } catch {
@@ -57,6 +56,7 @@ const Rewards = () => {
     } finally {
       setRedeeming(null);
     }
+
   };
 
   const filtered = filter === "all" ? rewards : rewards.filter((r) => r.category === filter);
