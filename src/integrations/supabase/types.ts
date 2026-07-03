@@ -14,6 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges_catalog: {
+        Row: {
+          id: string
+          requirement: number
+        }
+        Insert: {
+          id: string
+          requirement: number
+        }
+        Update: {
+          id?: string
+          requirement?: number
+        }
+        Relationships: []
+      }
       donations: {
         Row: {
           created_at: string
@@ -110,6 +125,21 @@ export type Database = {
         }
         Relationships: []
       }
+      rewards_catalog: {
+        Row: {
+          id: string
+          points_cost: number
+        }
+        Insert: {
+          id: string
+          points_cost: number
+        }
+        Update: {
+          id?: string
+          points_cost?: number
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -136,7 +166,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      record_donation: {
+        Args: { _date?: string; _location?: string }
+        Returns: undefined
+      }
+      redeem_reward: { Args: { _reward_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
