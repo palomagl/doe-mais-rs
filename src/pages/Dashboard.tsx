@@ -168,12 +168,19 @@ const Dashboard = () => {
               <p className="font-extrabold text-[17px] truncate mt-1">{profile.name.split(" ")[0]} 👋</p>
             </div>
           </div>
-          {profile.blood_type && (
-            <span className="bg-white/20 backdrop-blur text-sm font-extrabold px-3 py-1.5 rounded-full shrink-0 ring-1 ring-white/30">
-              {profile.blood_type}
-            </span>
-          )}
-        </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {profile.blood_type && (
+              <span className="bg-white/20 backdrop-blur text-sm font-extrabold px-3 py-1.5 rounded-full ring-1 ring-white/30">
+                {profile.blood_type}
+              </span>
+            )}
+            <ShareButton
+              variant="icon"
+              label="Convidar amigos"
+              text={`${profile.name?.split(" ")[0] || "Eu"} está usando o Doe+ RS para salvar vidas no Rio Grande do Sul. Vem doar comigo! 🩸`}
+            />
+          </div>
+
       </div>
 
       <div className="px-page -mt-7 relative z-10 container-mobile-lg flex flex-col gap-4">
