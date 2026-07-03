@@ -125,12 +125,15 @@ const Profile = () => {
 
         {/* Share */}
         {form.name && (
-          <ShareButton
-            variant="outline"
-            label="Compartilhar minha conquista"
-            text={`Sou doador(a) de sangue ${form.blood_type || ""} cadastrado(a) no Doe+ RS — já ajudei a salvar vidas no RS! 🩸 Junte-se a mim:`}
-          />
+          <div className="flex justify-end">
+            <ShareButton
+              variant="compact"
+              label="Compartilhar conquista"
+              text={`Sou doador(a) de sangue ${form.blood_type || ""} cadastrado(a) no Doe+ RS — já ajudei a salvar vidas no RS! 🩸 Junte-se a mim:`}
+            />
+          </div>
         )}
+
 
 
         {/* Conquistas */}
