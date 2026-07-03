@@ -180,8 +180,9 @@ const Dashboard = () => {
               text={`${profile.name?.split(" ")[0] || "Eu"} está usando o Doe+ RS para salvar vidas no Rio Grande do Sul. Vem doar comigo! 🩸`}
             />
           </div>
-
+        </div>
       </div>
+
 
       <div className="px-page -mt-7 relative z-10 container-mobile-lg flex flex-col gap-4">
 
