@@ -100,20 +100,8 @@ const Dashboard = () => {
   const canDonate = !lastDate || daysLeft <= 0;
   const donationCount = donations.length;
 
-  const checkAndUnlockBadges = async (newCount: number) => {
-    const earned = badgesEarned(newCount);
-    const newOnes = earned.filter((b) => !unlockedBadges.has(b.id));
-    if (newOnes.length === 0) return;
-    const inserts = newOnes.map((b) => ({ user_id: user!.id, badge_id: b.id }));
-    await supabase.from("user_badges").insert(inserts);
-    const next = new Set(unlockedBadges);
-    newOnes.forEach((b) => next.add(b.id));
-    setUnlockedBadges(next);
-    setTimeout(() => {
-      celebrateBadge();
-      toast({ title: `${newOnes[0].icon} Nova conquista!`, description: newOnes[0].title });
-    }, 800);
-  };
+
+
 
   const addDonation = async () => {
     if (!user || loadingAdd) return;
