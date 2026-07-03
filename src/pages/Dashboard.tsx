@@ -168,13 +168,21 @@ const Dashboard = () => {
               <p className="font-extrabold text-[17px] truncate mt-1">{profile.name.split(" ")[0]} 👋</p>
             </div>
           </div>
-          {profile.blood_type && (
-            <span className="bg-white/20 backdrop-blur text-sm font-extrabold px-3 py-1.5 rounded-full shrink-0 ring-1 ring-white/30">
-              {profile.blood_type}
-            </span>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {profile.blood_type && (
+              <span className="bg-white/20 backdrop-blur text-sm font-extrabold px-3 py-1.5 rounded-full ring-1 ring-white/30">
+                {profile.blood_type}
+              </span>
+            )}
+            <ShareButton
+              variant="icon"
+              label="Convidar amigos"
+              text={`${profile.name?.split(" ")[0] || "Eu"} está usando o Doe+ RS para salvar vidas no Rio Grande do Sul. Vem doar comigo! 🩸`}
+            />
+          </div>
         </div>
       </div>
+
 
       <div className="px-page -mt-7 relative z-10 container-mobile-lg flex flex-col gap-4">
 
@@ -292,26 +300,12 @@ const Dashboard = () => {
         {/* Alert */}
         <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground">Estoque baixo: O-</p>
             <p className="text-xs text-muted-foreground">O tipo O- está em falta no RS. Se puder, doe!</p>
+          </div>
         </div>
 
-        {/* Invite friends */}
-        <div className="rounded-2xl bg-card border border-border p-5">
-          <h3 className="font-bold text-foreground mb-1">Convide amigos a doar 🩸</h3>
-          <p className="text-xs text-muted-foreground mb-4">
-            1 doação = até 4 vidas salvas. Compartilhe o app com quem você ama.
-          </p>
-          <ShareButton
-            variant="primary"
-            label="Convidar amigos"
-            text={`${profile.name?.split(" ")[0] || "Eu"} está usando o Doe+ RS para salvar vidas no Rio Grande do Sul. Vem doar comigo! 🩸`}
-          />
-        </div>
-
-
-        </div>
 
         {/* History */}
         <div>
