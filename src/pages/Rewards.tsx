@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Gift, Star, Trophy, Check, Loader2, AlertTriangle } from "lucide-react";
+import { Gift, Star, Trophy, Check, Loader2 } from "lucide-react";
 import { rewards, Reward, POINTS_PER_DONATION } from "@/data/rewards";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { successHaptic, tapHaptic } from "@/lib/native";
 import BottomNav from "@/components/BottomNav";
 
 const Rewards = () => {
@@ -16,27 +17,28 @@ const Rewards = () => {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     const load = async () => {
-      const { data: p } = await supabase
-        .from("profiles")
-        .select("reward_points")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (p) setPoints(p.reward_points);
-
-      const { data: r } = await supabase
-        .from("redeemed_rewards")
-        .select("reward_id")
-        .eq("user_id", user.id);
-      if (r) setRedeemedIds(r.map((x) => x.reward_id));
-      setLoading(false);
+      try {
+        const [{ data: p }, { data: r }] = await Promise.all([
+          supabase.from("profiles").select("reward_points").eq("user_id", user.id).maybeSingle(),
+          supabase.from("redeemed_rewards").select("reward_id").eq("user_id", user.id),
+        ]);
+        if (cancelled) return;
+        if (p) setPoints(p.reward_points);
+        if (r) setRedeemedIds(r.map((x) => x.reward_id));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     };
     load();
+    return () => { cancelled = true; };
   }, [user]);
 
   const handleRedeem = async (reward: Reward) => {
     if (!user || redeeming) return;
     if (points < reward.pointsCost) {
+      tapHaptic();
       toast({ title: "Pontos insuficientes", description: `Faltam ${reward.pointsCost - points} pontos.`, variant: "destructive" });
       return;
     }
@@ -49,10 +51,12 @@ const Rewards = () => {
       const { data: p } = await supabase
         .from("profiles").select("reward_points").eq("user_id", user.id).maybeSingle();
       if (p) setPoints(p.reward_points);
-      setRedeemedIds([...redeemedIds, reward.id]);
+      setRedeemedIds((prev) => (prev.includes(reward.id) ? prev : [...prev, reward.id]));
+      successHaptic();
       toast({ title: "Resgatado! 🎉", description: reward.title });
-    } catch {
-      toast({ title: "Erro ao resgatar", description: "Tente novamente.", variant: "destructive" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Tente novamente.";
+      toast({ title: "Erro ao resgatar", description: msg, variant: "destructive" });
     } finally {
       setRedeeming(null);
     }
@@ -76,7 +80,7 @@ const Rewards = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-nav">
+    <div className="min-h-screen bg-background pb-nav animate-page-in">
       {/* Header */}
       <div className="bg-primary text-primary-foreground px-page pt-10 pb-8 rounded-b-[2rem] relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />

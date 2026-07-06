@@ -6,6 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { initNative } from "@/lib/native";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import OfflineBanner from "@/components/OfflineBanner";
 
 const Login = lazy(() => import("./pages/Login"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -42,31 +44,34 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App = () => {
   useEffect(() => { initNative(); }, []);
   return (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Suspense fallback={<FullScreenLoader />}>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-            <Route path="/new-donor" element={<ProtectedRoute><NewDonor /></ProtectedRoute>} />
-            <Route path="/eligibility-quiz" element={<ProtectedRoute><EligibilityQuiz /></ProtectedRoute>} />
-            <Route path="/donor-register" element={<ProtectedRoute><DonorRegister /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/centers" element={<ProtectedRoute><BloodCenters /></ProtectedRoute>} />
-            <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/benefits" element={<ProtectedRoute><Benefits /></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <OfflineBanner />
+        <BrowserRouter>
+          <Suspense fallback={<FullScreenLoader />}>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+              <Route path="/new-donor" element={<ProtectedRoute><NewDonor /></ProtectedRoute>} />
+              <Route path="/eligibility-quiz" element={<ProtectedRoute><EligibilityQuiz /></ProtectedRoute>} />
+              <Route path="/donor-register" element={<ProtectedRoute><DonorRegister /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/centers" element={<ProtectedRoute><BloodCenters /></ProtectedRoute>} />
+              <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/benefits" element={<ProtectedRoute><Benefits /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
   );
 };
 

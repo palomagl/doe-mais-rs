@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, LogOut, Shield, AlertTriangle, Award, Scale, ChevronRight } from "lucide-react";
+import { successHaptic, tapHaptic } from "@/lib/native";
 import BottomNav from "@/components/BottomNav";
 import DigitalCard from "@/components/DigitalCard";
 import BadgeGrid from "@/components/BadgeGrid";
@@ -65,6 +66,7 @@ const Profile = () => {
 
   const handleSave = async () => {
     if (!user || !form.name.trim()) {
+      tapHaptic();
       toast({ title: "Preencha seu nome", variant: "destructive" });
       return;
     }
@@ -81,8 +83,12 @@ const Profile = () => {
       })
       .eq("user_id", user.id);
     setSaving(false);
-    if (error) toast({ title: "Erro ao salvar", variant: "destructive" });
-    else toast({ title: "Perfil atualizado! ✅" });
+    if (error) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+    } else {
+      successHaptic();
+      toast({ title: "Perfil atualizado! ✅" });
+    }
   };
 
   const [loggingOut, setLoggingOut] = useState(false);
