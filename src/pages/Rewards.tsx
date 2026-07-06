@@ -17,22 +17,22 @@ const Rewards = () => {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     const load = async () => {
-      const { data: p } = await supabase
-        .from("profiles")
-        .select("reward_points")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (p) setPoints(p.reward_points);
-
-      const { data: r } = await supabase
-        .from("redeemed_rewards")
-        .select("reward_id")
-        .eq("user_id", user.id);
-      if (r) setRedeemedIds(r.map((x) => x.reward_id));
-      setLoading(false);
+      try {
+        const [{ data: p }, { data: r }] = await Promise.all([
+          supabase.from("profiles").select("reward_points").eq("user_id", user.id).maybeSingle(),
+          supabase.from("redeemed_rewards").select("reward_id").eq("user_id", user.id),
+        ]);
+        if (cancelled) return;
+        if (p) setPoints(p.reward_points);
+        if (r) setRedeemedIds(r.map((x) => x.reward_id));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     };
     load();
+    return () => { cancelled = true; };
   }, [user]);
 
   const handleRedeem = async (reward: Reward) => {

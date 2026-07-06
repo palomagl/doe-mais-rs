@@ -13,6 +13,7 @@ import BottomNav from "@/components/BottomNav";
 import ImpactCounter from "@/components/ImpactCounter";
 import BadgeGrid from "@/components/BadgeGrid";
 import ShareButton from "@/components/ShareButton";
+import { successHaptic, tapHaptic } from "@/lib/native";
 import logo from "@/assets/logo-doers.png";
 
 
