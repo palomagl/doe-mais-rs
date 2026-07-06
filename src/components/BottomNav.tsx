@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, MapPin, Gift, User, Scale } from "lucide-react";
+import { tapHaptic } from "@/lib/native";
 
 const BottomNav = () => {
   const navigate = useNavigate();
@@ -13,30 +14,53 @@ const BottomNav = () => {
     { path: "/profile", icon: User, label: "Perfil" },
   ];
 
+  const handleTap = (path: string) => {
+    if (location.pathname !== path) {
+      tapHaptic();
+      navigate(path);
+    }
+  };
+
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 glass border-t border-border/60 z-50 shadow-[0_-8px_24px_-12px_hsl(var(--primary)/0.18)]"
+      className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border/70 z-50"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      role="navigation"
+      aria-label="Navegação principal"
     >
-      <div className="flex items-stretch justify-around max-w-lg mx-auto px-1">
+      <div className="flex items-stretch justify-around max-w-lg mx-auto px-1 pt-1.5">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path;
           return (
             <button
               key={tab.path}
-              onClick={() => navigate(tab.path)}
-              className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl transition-all active:scale-95 ${
-                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
-              }`}
+              onClick={() => handleTap(tab.path)}
+              className="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl transition-transform active:scale-95 ripple"
               aria-label={tab.label}
               aria-current={isActive ? "page" : undefined}
             >
-              <div className={`flex items-center justify-center rounded-xl transition-all ${
-                isActive ? "bg-primary/12 w-9 h-9" : "w-9 h-9"
-              }`}>
-                <tab.icon className={`w-[18px] h-[18px] ${isActive ? "stroke-[2.5]" : ""}`} />
+              {/* Material 3 pill indicator */}
+              <div
+                className={`flex items-center justify-center rounded-full transition-all duration-300 ${
+                  isActive
+                    ? "bg-primary/15 w-14 h-8"
+                    : "w-14 h-8"
+                }`}
+              >
+                <tab.icon
+                  className={`w-[22px] h-[22px] transition-colors ${
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  }`}
+                  strokeWidth={isActive ? 2.4 : 2}
+                />
               </div>
-              <span className={`text-[9.5px] font-semibold leading-none truncate max-w-full ${isActive ? "text-primary" : ""}`}>
+              <span
+                className={`text-[10.5px] leading-none truncate max-w-full transition-colors ${
+                  isActive
+                    ? "text-primary font-bold"
+                    : "text-muted-foreground font-medium"
+                }`}
+              >
                 {tab.label}
               </span>
             </button>
