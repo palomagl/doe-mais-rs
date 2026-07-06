@@ -140,6 +140,7 @@ const Dashboard = () => {
       setUnlockedBadges(nextIds);
 
       celebrateDonation();
+      successHaptic();
       toast({ title: "Doação registrada! 🎉", description: `+${POINTS_PER_DONATION} pontos · 4 vidas salvas!` });
 
       const newlyUnlocked = [...nextIds].filter((id) => !prevBadgeIds.has(id));
@@ -147,11 +148,14 @@ const Dashboard = () => {
         const badge = BADGES.find((x) => x.id === newlyUnlocked[0]);
         setTimeout(() => {
           celebrateBadge();
+          successHaptic();
           if (badge) toast({ title: `${badge.icon} Nova conquista!`, description: badge.title });
         }, 800);
       }
-    } catch {
-      toast({ title: "Erro ao registrar", description: "Tente novamente.", variant: "destructive" });
+    } catch (err) {
+      tapHaptic();
+      const msg = err instanceof Error ? err.message : "Tente novamente.";
+      toast({ title: "Erro ao registrar", description: msg, variant: "destructive" });
     } finally {
       setLoadingAdd(false);
     }
