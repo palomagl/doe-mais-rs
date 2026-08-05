@@ -23,7 +23,7 @@ const BottomNav = () => {
 
   return (
     <nav
-      className="bottom-nav-fixed bg-card/95 backdrop-blur-xl border-t border-border/70"
+      className="bottom-nav-fixed bg-card/95 backdrop-blur-xl border-t border-border/70 shadow-soft"
       role="navigation"
       aria-label="Navegação principal"
     >

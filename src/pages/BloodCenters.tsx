@@ -40,7 +40,7 @@ const BloodCenters = () => {
         <div className="relative z-10">
           <h1 className="text-2xl font-bold">Hemocentros 📍</h1>
           <p className="text-sm opacity-80 mt-1">
-            {lat ? "Ordenados por distância de você" : "Encontre o mais próximo no RS"}
+            {lat ? "Ordenados por distância de você" : geoLoading ? "Solicitando permissão de localização..." : "Permita localização para ver os hemocentros mais próximos"}
           </p>
         </div>
       </div>
@@ -81,8 +81,11 @@ const BloodCenters = () => {
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-foreground text-sm leading-snug">{center.name}</h3>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground mt-1">
+                    {center.region} • {center.city}
+                  </p>
                   {center.distance !== undefined && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary mt-1">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary mt-2">
                       <Navigation className="w-3 h-3" /> {formatDistance(center.distance)} de você
                     </span>
                   )}
@@ -91,12 +94,38 @@ const BloodCenters = () => {
               <div className="flex flex-col gap-2 mb-3">
                 <div className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                  <p className="text-xs text-muted-foreground">{center.address} — {center.city}</p>
+                  <p className="text-xs text-muted-foreground">{center.address}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-primary shrink-0" />
                   <a href={`tel:${center.phone}`} className="text-xs text-primary font-medium">{center.phone}</a>
                 </div>
+                {center.whatsapp && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-primary shrink-0" />
+                    <a
+                      href={`https://wa.me/${center.whatsapp.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs text-primary font-medium"
+                    >
+                      WhatsApp: {center.whatsapp}
+                    </a>
+                  </div>
+                )}
+                {center.website && (
+                  <div className="flex items-center gap-2">
+                    <ExternalLink className="w-4 h-4 text-primary shrink-0" />
+                    <a
+                      href={center.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs text-primary font-medium underline"
+                    >
+                      Agendamento online
+                    </a>
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-primary shrink-0" />
                   <p className="text-xs text-muted-foreground">{center.hours}</p>

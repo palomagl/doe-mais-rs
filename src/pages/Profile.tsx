@@ -199,14 +199,14 @@ const Profile = () => {
             {!isComplete && (
               <button
                 onClick={openEdit}
-                className="rounded-2xl border border-warning/40 bg-warning/10 p-4 flex items-center gap-3 text-left active:scale-[0.98]"
+                className="mt-6 rounded-3xl border border-warning/50 bg-warning/15 p-4 flex items-start gap-3 text-left shadow-soft transition-all hover:-translate-y-0.5 active:scale-[0.98]"
               >
-                <span className="w-9 h-9 rounded-full bg-warning/20 text-warning flex items-center justify-center font-extrabold shrink-0">
+                <span className="mt-1 w-10 h-10 rounded-full bg-warning/25 text-warning flex items-center justify-center font-extrabold text-base shrink-0">
                   !
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground">Faltam alguns dados</p>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="text-base font-bold text-foreground">Faltam alguns dados</p>
+                  <p className="text-sm text-muted-foreground truncate">
                     {missing.map((k) => FIELD_LABELS[k]).join(" · ")}
                   </p>
                 </div>
@@ -227,40 +227,15 @@ const Profile = () => {
             )}
 
             {form.name && (
-              <div className="flex justify-end">
+              <div className="flex justify-center">
                 <ShareButton
-                  variant="compact"
+                  variant="primary"
+                  className="max-w-md"
                   label="Compartilhar conquista"
                   text={`Sou doador(a) de sangue ${form.blood_type || ""} cadastrado(a) no Doe+ RS — já ajudei a salvar vidas no RS! 🩸 Junte-se a mim:`}
                 />
               </div>
             )}
-
-            {/* Resumo dos dados */}
-            <div className="rounded-2xl bg-card border border-border p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-foreground">Dados pessoais</h3>
-                <button
-                  onClick={openEdit}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-primary px-3 py-1.5 rounded-full bg-primary/10 active:scale-95"
-                >
-                  <Pencil className="w-3.5 h-3.5" /> Editar
-                </button>
-              </div>
-              <dl className="divide-y divide-border">
-                {Object.entries(FIELD_LABELS).map(([key, label]) => {
-                  const value = form[key as keyof typeof form];
-                  return (
-                    <div key={key} className="flex items-center justify-between gap-3 py-2.5">
-                      <dt className="text-xs text-muted-foreground">{label}</dt>
-                      <dd className={`text-sm font-medium text-right truncate ${value ? "text-foreground" : "text-warning"}`}>
-                        {value || "Faltando !"}
-                      </dd>
-                    </div>
-                  );
-                })}
-              </dl>
-            </div>
 
             {/* Conquistas */}
             <div className="rounded-2xl bg-card border border-border p-5">
