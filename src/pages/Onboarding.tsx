@@ -3,14 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { Heart, UserPlus, Droplets } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useGuest } from "@/lib/guest";
 import logo from "@/assets/logo-doers.png";
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const guest = useGuest();
 
   useEffect(() => {
     const checkProfile = async () => {
+      if (guest) { navigate("/dashboard", { replace: true }); return; }
       if (!user) return;
       const { data } = await supabase
         .from("profiles")
@@ -23,7 +26,7 @@ const Onboarding = () => {
       }
     };
     checkProfile();
-  }, [user, navigate]);
+  }, [user, guest, navigate]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

@@ -3,12 +3,15 @@ import { Gift, Star, Trophy, Check, Loader2 } from "lucide-react";
 import { rewards, Reward, POINTS_PER_DONATION } from "@/data/rewards";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useGuest, useRequireAccount } from "@/lib/guest";
 import { toast } from "@/hooks/use-toast";
 import { successHaptic, tapHaptic } from "@/lib/native";
 import BottomNav from "@/components/BottomNav";
 
 const Rewards = () => {
   const { user } = useAuth();
+  const guest = useGuest();
+  const requireAccount = useRequireAccount();
   const [points, setPoints] = useState(0);
   const [redeemedIds, setRedeemedIds] = useState<string[]>([]);
   const [filter, setFilter] = useState<string>("all");
@@ -16,6 +19,7 @@ const Rewards = () => {
   const [redeeming, setRedeeming] = useState<string | null>(null);
 
   useEffect(() => {
+    if (guest) { setLoading(false); return; }
     if (!user) return;
     let cancelled = false;
     const load = async () => {
@@ -33,9 +37,10 @@ const Rewards = () => {
     };
     load();
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, guest]);
 
   const handleRedeem = async (reward: Reward) => {
+    if (requireAccount("resgatar prêmios")) return;
     if (!user || redeeming) return;
     if (points < reward.pointsCost) {
       tapHaptic();

@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { initNative } from "@/lib/native";
+import { useGuest } from "@/lib/guest";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import OfflineBanner from "@/components/OfflineBanner";
 
@@ -36,6 +37,8 @@ const FullScreenLoader = () => (
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+  const guest = useGuest();
+  if (guest) return <>{children}</>;
   if (loading) return <FullScreenLoader />;
   if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Droplets, Eye, EyeOff } from "lucide-react";
+import { Droplets, Eye, EyeOff, UserRound } from "lucide-react";
+import { setGuest } from "@/lib/guest";
 import logo from "@/assets/logo-doers.png";
 
 const translateError = (msg: string) => {
@@ -40,11 +41,13 @@ const Login = () => {
           options: { emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) throw error;
+        setGuest(false);
         toast({ title: "Conta criada! 🎉", description: "Bem-vindo ao Doe+ RS!" });
         navigate("/");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
+        setGuest(false);
         navigate("/");
       }
     } catch (error: any) {
@@ -156,7 +159,29 @@ const Login = () => {
               {isSignUp ? "Entrar" : "Criar conta"}
             </button>
           </p>
+
+          <div className="flex items-center gap-3 mt-2">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-[11px] text-muted-foreground uppercase tracking-wide">ou</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setGuest(true);
+              navigate("/dashboard", { replace: true });
+            }}
+            className="w-full h-12 rounded-xl border border-border bg-card text-foreground font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ripple"
+          >
+            <UserRound className="w-5 h-5 text-muted-foreground" />
+            Continuar sem login
+          </button>
+          <p className="text-center text-[11px] text-muted-foreground -mt-1">
+            No modo visitante você explora o app, mas não pode salvar dados pessoais.
+          </p>
         </form>
+
 
         <p className="mt-auto pt-6 text-[11px] text-muted-foreground text-center">
           Doe+ RS — Incentivando a doação de sangue no Rio Grande do Sul 🩸
