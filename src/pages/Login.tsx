@@ -40,11 +40,13 @@ const Login = () => {
           options: { emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) throw error;
+        setGuest(false);
         toast({ title: "Conta criada! 🎉", description: "Bem-vindo ao Doe+ RS!" });
         navigate("/");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
+        setGuest(false);
         navigate("/");
       }
     } catch (error: any) {
