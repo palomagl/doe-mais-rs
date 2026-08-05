@@ -8,6 +8,7 @@ import { differenceInDays, format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useGuest, useRequireAccount } from "@/lib/guest";
 import { useToast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import ImpactCounter from "@/components/ImpactCounter";
@@ -39,6 +40,8 @@ const DONATION_INTERVAL_DAYS_F = 60;
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const guest = useGuest();
+  const requireAccount = useRequireAccount();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -47,6 +50,12 @@ const Dashboard = () => {
   const [error, setError] = useState(false);
 
   const load = useCallback(async () => {
+    if (guest) {
+      setProfile({ name: "Visitante", sex: "", blood_type: "", city: "", last_donation: null, reward_points: 0 });
+      setDonations([]);
+      setUnlockedBadges(new Set());
+      return;
+    }
     if (!user) return;
     try {
       const { data: p, error: pErr } = await supabase
@@ -70,7 +79,7 @@ const Dashboard = () => {
     } catch {
       setError(true);
     }
-  }, [user, navigate]);
+  }, [user, guest, navigate]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -105,6 +114,7 @@ const Dashboard = () => {
 
 
   const addDonation = async () => {
+    if (requireAccount("registrar doações")) return;
     if (!user || loadingAdd) return;
     if (!canDonate) {
       toast({
