@@ -36,6 +36,8 @@ const FullScreenLoader = () => (
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+  const guest = useGuest();
+  if (guest) return <>{children}</>;
   if (loading) return <FullScreenLoader />;
   if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
