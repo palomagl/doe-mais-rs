@@ -29,15 +29,24 @@ const Rewards = () => {
           supabase.from("redeemed_rewards").select("reward_id").eq("user_id", user.id),
         ]);
         if (cancelled) return;
-        if (p) setPoints(p.reward_points);
+        if (p) setPoints(p.reward_points ?? 0);
         if (r) setRedeemedIds(r.map((x) => x.reward_id));
+      } catch (error: any) {
+        if (!cancelled) {
+          tapHaptic();
+          toast({
+            title: "Erro ao carregar prêmios",
+            description: error.message || "Tente novamente mais tarde.",
+            variant: "destructive",
+          });
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
     };
     load();
     return () => { cancelled = true; };
-  }, [user, guest]);
+  }, [user, guest, toast]);
 
   const handleRedeem = async (reward: Reward) => {
     if (requireAccount("resgatar prêmios")) return;

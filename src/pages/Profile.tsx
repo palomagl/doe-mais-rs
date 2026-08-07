@@ -57,32 +57,53 @@ const Profile = () => {
   });
 
   useEffect(() => {
+    let cancelled = false;
     if (guest) { setLoading(false); return; }
     if (!user) return;
+
     (async () => {
-      const [{ data: p }, { count }] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("name, sex, blood_type, city, cpf, birth_date, card_photo_url")
-          .eq("user_id", user.id)
-          .maybeSingle(),
-        supabase.from("donations").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-      ]);
-      if (p) {
-        setForm({
-          name: p.name ?? "",
-          sex: p.sex ?? "",
-          blood_type: p.blood_type ?? "",
-          city: p.city ?? "",
-          cpf: p.cpf ?? "",
-          birth_date: p.birth_date ?? "",
-        });
-        setCardPhotoUrl(p.card_photo_url ?? null);
+      try {
+        const [{ data: p }, { count }] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("name, sex, blood_type, city, cpf, birth_date, card_photo_url")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          supabase.from("donations").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        ]);
+
+        if (cancelled) return;
+
+        if (p) {
+          setForm({
+            name: p.name ?? "",
+            sex: p.sex ?? "",
+            blood_type: p.blood_type ?? "",
+            city: p.city ?? "",
+            cpf: p.cpf ?? "",
+            birth_date: p.birth_date ?? "",
+          });
+          setCardPhotoUrl(p.card_photo_url ?? null);
+        }
+        setDonationCount(count ?? 0);
+      } catch (error: any) {
+        if (!cancelled) {
+          tapHaptic();
+          toast({
+            title: "Erro ao carregar perfil",
+            description: error.message || "Tente novamente mais tarde.",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setDonationCount(count ?? 0);
-      setLoading(false);
     })();
-  }, [user, guest]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, guest, toast]);
 
   const missing = useMemo(
     () => Object.keys(FIELD_LABELS).filter((k) => !form[k as keyof typeof form]?.trim()),

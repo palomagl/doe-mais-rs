@@ -4,29 +4,45 @@ import { Heart, UserPlus, Droplets } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuest } from "@/lib/guest";
+import { useToast } from "@/hooks/use-toast";
+import { tapHaptic } from "@/lib/native";
 import logo from "@/assets/logo-doers.png";
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const guest = useGuest();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkProfile = async () => {
-      if (guest) { navigate("/dashboard", { replace: true }); return; }
-      if (!user) return;
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, is_existing_donor")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (data) {
+      if (guest) {
         navigate("/dashboard", { replace: true });
+        return;
+      }
+      if (!user) return;
+
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("id, is_existing_donor")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (data) {
+          navigate("/dashboard", { replace: true });
+        }
+      } catch (error: any) {
+        tapHaptic();
+        toast({
+          title: "Erro ao verificar perfil",
+          description: error.message || "Verifique sua conexão e tente novamente.",
+          variant: "destructive",
+        });
       }
     };
     checkProfile();
-  }, [user, guest, navigate]);
+  }, [user, guest, navigate, toast]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

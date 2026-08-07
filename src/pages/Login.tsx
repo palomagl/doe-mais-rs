@@ -45,10 +45,26 @@ const Login = () => {
         toast({ title: "Conta criada! 🎉", description: "Bem-vindo ao Doe+ RS!" });
         navigate("/");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        const { data: authData, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
         setGuest(false);
-        navigate("/");
+
+        const userId = authData?.user?.id;
+        if (userId) {
+          const { data: profile, error: profileError } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("user_id", userId)
+            .maybeSingle();
+
+          if (!profileError && profile) {
+            navigate("/dashboard", { replace: true });
+          } else {
+            navigate("/", { replace: true });
+          }
+        } else {
+          navigate("/", { replace: true });
+        }
       }
     } catch (error: any) {
       toast({

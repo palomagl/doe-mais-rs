@@ -16,9 +16,13 @@ const setGlobal = (u: User | null) => {
 };
 
 // Start hydration once at module load
-supabase.auth.getSession().then(({ data: { session } }) => {
-  setGlobal(session?.user ?? null);
-});
+supabase.auth.getSession()
+  .then(({ data: { session } }) => {
+    setGlobal(session?.user ?? null);
+  })
+  .catch(() => {
+    setGlobal(null);
+  });
 supabase.auth.onAuthStateChange((_event, session) => {
   setGlobal(session?.user ?? null);
 });

@@ -21,13 +21,22 @@ const DigitalCard = ({ userId, name, bloodType, cpf, cardPhotoUrl, onPhotoChange
 
   useEffect(() => {
     let active = true;
-    if (cardPhotoUrl) {
-      supabase.storage.from("donor-cards").createSignedUrl(cardPhotoUrl, 3600).then(({ data }) => {
-        if (active && data?.signedUrl) setSignedUrl(data.signedUrl);
-      });
-    } else {
-      setSignedUrl(null);
-    }
+    const loadSignedUrl = async () => {
+      if (!cardPhotoUrl) {
+        setSignedUrl(null);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.storage.from("donor-cards").createSignedUrl(cardPhotoUrl, 3600);
+        if (error) throw error;
+        if (active) setSignedUrl(data?.signedUrl ?? null);
+      } catch {
+        if (active) setSignedUrl(null);
+      }
+    };
+
+    loadSignedUrl();
     return () => { active = false; };
   }, [cardPhotoUrl]);
 
@@ -42,21 +51,28 @@ const DigitalCard = ({ userId, name, bloodType, cpf, cardPhotoUrl, onPhotoChange
     try {
       const ext = file.name.split(".").pop() || "jpg";
       const path = `${userId}/card.${ext}`;
-      // remove previous
-      if (cardPhotoUrl) await supabase.storage.from("donor-cards").remove([cardPhotoUrl]);
+
+      if (cardPhotoUrl) {
+        const { error: removeError } = await supabase.storage.from("donor-cards").remove([cardPhotoUrl]);
+        if (removeError) throw removeError;
+      }
 
       const { error } = await supabase.storage
         .from("donor-cards")
         .upload(path, file, { upsert: true, contentType: file.type });
       if (error) throw error;
 
-      await supabase.from("profiles").update({ card_photo_url: path }).eq("user_id", userId);
-      const { data: signed } = await supabase.storage.from("donor-cards").createSignedUrl(path, 3600);
+      const { error: updateError } = await supabase.from("profiles").update({ card_photo_url: path }).eq("user_id", userId);
+      if (updateError) throw updateError;
+
+      const { data: signed, error: signedError } = await supabase.storage.from("donor-cards").createSignedUrl(path, 3600);
+      if (signedError) throw signedError;
+
       setSignedUrl(signed?.signedUrl ?? null);
       onPhotoChange(path);
       toast({ title: "Carteirinha enviada! ✅" });
-    } catch (err) {
-      toast({ title: "Erro ao enviar", description: "Tente novamente.", variant: "destructive" });
+    } catch {
+      toast({ title: "Erro ao enviar", description: "Não foi possível enviar a foto. Tente novamente.", variant: "destructive" });
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -66,12 +82,21 @@ const DigitalCard = ({ userId, name, bloodType, cpf, cardPhotoUrl, onPhotoChange
   const handleRemove = async () => {
     if (!cardPhotoUrl) return;
     setUploading(true);
-    await supabase.storage.from("donor-cards").remove([cardPhotoUrl]);
-    await supabase.from("profiles").update({ card_photo_url: null }).eq("user_id", userId);
-    setSignedUrl(null);
-    onPhotoChange(null);
-    setUploading(false);
-    toast({ title: "Foto removida" });
+    try {
+      const { error: removeError } = await supabase.storage.from("donor-cards").remove([cardPhotoUrl]);
+      if (removeError) throw removeError;
+
+      const { error: updateError } = await supabase.from("profiles").update({ card_photo_url: null }).eq("user_id", userId);
+      if (updateError) throw updateError;
+
+      setSignedUrl(null);
+      onPhotoChange(null);
+      toast({ title: "Foto removida" });
+    } catch {
+      toast({ title: "Erro ao remover", description: "Não foi possível remover a foto.", variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (

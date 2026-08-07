@@ -65,21 +65,32 @@ const Dashboard = () => {
         .maybeSingle();
 
       if (pErr) throw pErr;
-      if (!p) { navigate("/", { replace: true }); return; }
+      if (!p) {
+        navigate("/", { replace: true });
+        return;
+      }
       setProfile(p);
 
-      const { data: d } = await supabase
+      const { data: d, error: dErr } = await supabase
         .from("donations").select("id, date, location")
         .eq("user_id", user.id).order("date", { ascending: false });
-      if (d) setDonations(d);
+      if (dErr) throw dErr;
+      setDonations(d ?? []);
 
-      const { data: b } = await supabase
+      const { data: b, error: bErr } = await supabase
         .from("user_badges").select("badge_id").eq("user_id", user.id);
-      if (b) setUnlockedBadges(new Set(b.map((x) => x.badge_id)));
-    } catch {
+      if (bErr) throw bErr;
+      setUnlockedBadges(new Set((b ?? []).map((x) => x.badge_id)));
+    } catch (error: any) {
       setError(true);
+      tapHaptic();
+      toast({
+        title: "Erro ao carregar dashboard",
+        description: error.message || "Não foi possível exibir seus dados.",
+        variant: "destructive",
+      });
     }
-  }, [user, guest, navigate]);
+  }, [user, guest, navigate, toast]);
 
   useEffect(() => { load(); }, [load]);
 
