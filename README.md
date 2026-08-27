@@ -1,61 +1,112 @@
-# Doe+ RS
+# 🩸 Doe+ RS
 
-Aplicativo Doe+ RS para gestão de doadores, perfil, doações, recompensas e hemocentros.
+> Uma plataforma digital criada para incentivar, facilitar e acompanhar a doação de sangue no Rio Grande do Sul.
 
-## Tecnologias usadas
+O **Doe+ RS** foi desenvolvido com o objetivo de aproximar doadores dos hemocentros, facilitar o acompanhamento das doações e tornar o processo mais simples e motivador por meio de recursos digitais e gamificação.
 
-- Vite + React + TypeScript
+---
+
+## 📱 Sobre o projeto
+
+O Doe+ RS reúne em uma única plataforma recursos para que o usuário possa acompanhar sua jornada como doador.
+
+A aplicação foi pensada para resolver alguns problemas comuns relacionados à doação de sangue, como dificuldade para encontrar informações sobre hemocentros, falta de acompanhamento das doações e pouca motivação para manter a frequência de doação.
+
+A proposta é transformar a experiência de doação em uma jornada mais simples, informativa e engajadora.
+
+---
+
+## ✨ Funcionalidades
+
+### 👤 Perfil do doador
+
+- Cadastro e autenticação
+- Perfil personalizado
+- Informações do usuário
+- Histórico de doações
+- Acompanhamento da jornada de doador
+
+### 🩸 Doações
+
+- Registro de doações
+- Histórico de doações
+- Acompanhamento do período entre doações
+- Informações relacionadas à próxima doação
+
+### 🏥 Hemocentros
+
+- Consulta de hemocentros
+- Informações dos locais de doação
+- Facilitação da busca por pontos de atendimento
+
+### 🎮 Gamificação
+
+O Doe+ RS utiliza elementos de gamificação para incentivar a continuidade das doações.
+
+- Recompensas
+- Progresso do usuário
+- Conquistas
+- Sistema de incentivo
+
+### 🏆 Doe+ Hero
+
+O projeto também conta com uma experiência de gamificação chamada **Doe+ Hero**, criada para complementar a plataforma e tornar a experiência mais interativa.
+
+---
+
+## 🖥️ Demonstração
+
+> 🚧 Projeto em desenvolvimento / demonstração
+
+🔗 **Aplicação:** [Adicionar link do deploy]
+
+📱 **Demonstração mobile:** [Adicionar quando disponível]
+
+---
+
+## 🛠️ Tecnologias
+
+### Frontend
+
+- React
+- TypeScript
+- Vite
 - Tailwind CSS
-- Supabase para autenticação, banco de dados e storage
-- Capacitor para empacotar o app como mobile
 
-## Rodar localmente
+### Backend / Dados
 
-1. Instale dependências:
-   ```bash
-   npm install
-   ```
-2. Crie um arquivo `.env` na raiz com as variáveis:
-   ```env
-   VITE_SUPABASE_URL=your-supabase-url
-   VITE_SUPABASE_PUBLISHABLE_KEY=your-supabase-anon-key
-   ```
-3. Inicie o app:
-   ```bash
-   npm run dev
-   ```
+- Supabase
+- PostgreSQL
+- Supabase Auth
+- Supabase Storage
 
-## Build de produção
+### Mobile
 
-```bash
-npm run build
-```
+- Capacitor
 
-## Deploy no Vercel
+### Deploy
 
-1. Conecte seu repositório ao Vercel.
-2. Configure o projeto como app Vite.
-3. Use:
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-4. Adicione as variáveis de ambiente no painel do Vercel:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_PUBLISHABLE_KEY`
-5. Faça deploy e o frontend ficará hospedado na Vercel.
+- Vercel
 
-## Banco de dados online
+---
 
-O app já está preparado para usar **Supabase** como banco de dados remoto.
+## 🏗️ Arquitetura
 
-1. Crie um projeto em https://app.supabase.com
-2. Copie o `URL` e a `anon key`
-3. Defina esses valores nas variáveis de ambiente do Vercel
-4. Se você quiser aplicar a estrutura do banco localmente, use o Supabase CLI com as migrations existentes em `supabase/migrations`
+A aplicação utiliza uma arquitetura baseada em frontend web conectado ao Supabase para autenticação, banco de dados e armazenamento.
 
-> O código da aplicação lê as variáveis em `src/integrations/supabase/client.ts`.
-
-## Observações
-
-- O deploy no Vercel serve o frontend.
-- O banco de dados precisa ficar em um serviço online separado (Supabase é recomendado e já suportado).
-- Se precisar, posso ajudar a gerar o projeto Supabase e configurar as migrations.
+```text
+                    ┌─────────────────┐
+                    │    Doe+ RS      │
+                    │   React + TS    │
+                    └────────┬────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+              ▼              ▼              ▼
+         Autenticação    Database        Storage
+         Supabase        Supabase        Supabase
+              │              │              │
+              └──────────────┼──────────────┘
+                             │
+                             ▼
+                       Dados do usuário
