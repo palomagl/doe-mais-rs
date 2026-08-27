@@ -56,11 +56,9 @@ O projeto também conta com uma experiência de gamificação chamada **Doe+ Her
 
 ## 🖥️ Demonstração
 
-> 🚧 Projeto em desenvolvimento / demonstração
+🚀 **[Acessar o Doe+ RS](https://doe-mais-rs.vercel.app/)**
 
-🔗 **Aplicação:** [Adicionar link do deploy]
-
-📱 **Demonstração mobile:** [Adicionar quando disponível]
+> 🚧 Projeto em desenvolvimento — novas funcionalidades estão sendo integradas.
 
 ---
 
