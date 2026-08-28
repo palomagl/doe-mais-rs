@@ -28,10 +28,15 @@ const ResetPassword = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const passwordValid = password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
+  const passwordError = password && !passwordValid
+    ? "Senha precisa ter 8+ caracteres, letras e números."
+    : null;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) {
-      toast({ title: "Senha curta", description: "Mínimo de 6 caracteres.", variant: "destructive" });
+    if (!passwordValid) {
+      toast({ title: "Senha fraca", description: passwordError, variant: "destructive" });
       return;
     }
     if (password !== confirm) {
@@ -45,7 +50,7 @@ const ResetPassword = () => {
       toast({ title: "Senha redefinida! ✅", description: "Você já pode entrar com a nova senha." });
       await supabase.auth.signOut();
       navigate("/login", { replace: true });
-    } catch (error: any) {
+    } catch (error) {
       toast({ title: "Erro", description: error.message || "Tente novamente.", variant: "destructive" });
     } finally {
       setLoading(false);
@@ -98,7 +103,9 @@ const ResetPassword = () => {
                   {show ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground">Mínimo de 6 caracteres</p>
+              <p className={`text-xs mt-1 ${passwordError ? "text-destructive" : "text-muted-foreground"}`}>
+                {passwordError ?? "Senha com 8+ caracteres, letras e números."}
+              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -122,7 +129,7 @@ const ResetPassword = () => {
 
             <Button
               type="submit"
-              disabled={loading || !password || !confirm}
+              disabled={loading || !password || !confirm || !passwordValid}
               className="w-full h-12 rounded-xl text-base font-bold shadow-lg mt-2"
             >
               {loading ? <Droplets className="w-5 h-5 animate-pulse" /> : "Salvar nova senha"}

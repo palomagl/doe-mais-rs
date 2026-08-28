@@ -54,4 +54,18 @@ export const DONOR_BENEFITS: DonorBenefit[] = [
     icon: "🚌",
     category: "transport",
   },
+  {
+    id: "7",
+    title: "Descontos em lazer e turismo",
+    description: "Doadores podem conseguir descontos em cinemas, teatros, museus e eventos culturais conveniados no RS.",
+    icon: "🎟️",
+    category: "leisure",
+  },
+  {
+    id: "8",
+    title: "Auxílio no transporte para doadores",
+    description: "Algumas empresas e iniciativas oferecem descontos ou prioridades em ônibus e barcas para quem comprova doação.",
+    icon: "🚏",
+    category: "transport",
+  },
 ];

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, Droplets, AlertTriangle, Plus, Gift, Calendar, TrendingUp, Award, Scale, ChevronRight } from "lucide-react";
+import { MapPin, Clock, Droplets, AlertTriangle, Plus, Gift, Calendar, TrendingUp, Award, Scale, ChevronRight, Gamepad2 } from "lucide-react";
 import { POINTS_PER_DONATION } from "@/data/rewards";
 import { BADGES, badgesEarned } from "@/data/badges";
 import { celebrateDonation, celebrateBadge } from "@/lib/celebrate";
@@ -33,9 +33,9 @@ interface Donation {
   location: string;
 }
 
-// Per spec: Male 90 / Female 60 days
-const DONATION_INTERVAL_DAYS_M = 90;
-const DONATION_INTERVAL_DAYS_F = 60;
+// Ministério da Saúde: homens a cada 60 dias (até 4x/ano), mulheres a cada 90 dias (até 3x/ano)
+const DONATION_INTERVAL_DAYS_M = 60;
+const DONATION_INTERVAL_DAYS_F = 90;
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -81,7 +81,7 @@ const Dashboard = () => {
         .from("user_badges").select("badge_id").eq("user_id", user.id);
       if (bErr) throw bErr;
       setUnlockedBadges(new Set((b ?? []).map((x) => x.badge_id)));
-    } catch (error: any) {
+    } catch (error) {
       setError(true);
       tapHaptic();
       toast({
@@ -120,6 +120,10 @@ const Dashboard = () => {
   const daysLeft = nextDate ? differenceInDays(nextDate, new Date()) : 0;
   const canDonate = !lastDate || daysLeft <= 0;
   const donationCount = donations.length;
+
+  const openHero = () => {
+    navigate("/jogo");
+  };
 
 
 
@@ -367,6 +371,14 @@ const Dashboard = () => {
         </div>
       </div>
 
+      <button
+        type="button"
+        onClick={openHero}
+        className="fixed bottom-[5.5rem] right-4 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-glow ring-4 ring-primary/25 transition-transform duration-300 hover:-translate-y-1 active:scale-95"
+        aria-label="Abrir DOE+ HERO"
+      >
+        <Gamepad2 className="h-6 w-6" />
+      </button>
       <BottomNav />
     </div>
   );

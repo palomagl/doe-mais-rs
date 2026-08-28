@@ -4,14 +4,10 @@ import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { capitalizeWords, formatCpf, isCpf, normalizeText } from "@/lib/format";
+import { rsCities } from "@/data/rsCities";
 
 const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-
-const rsCities = [
-  "Porto Alegre", "Caxias do Sul", "Pelotas", "Canoas", "Santa Maria",
-  "Gravataí", "Viamão", "Novo Hamburgo", "São Leopoldo", "Rio Grande",
-  "Passo Fundo", "Sapucaia do Sul", "Uruguaiana", "Santa Cruz do Sul", "Bagé",
-];
 
 const DonorRegister = () => {
   const navigate = useNavigate();
@@ -24,14 +20,36 @@ const DonorRegister = () => {
     sex: "",
     bloodType: "",
     city: "",
+    cpf: "",
+    birthDate: "",
     lastDonation: "",
   });
 
   const filteredCities = rsCities.filter((c) =>
-    c.toLowerCase().includes(form.city.toLowerCase())
+    normalizeText(c).includes(normalizeText(form.city))
   );
 
-  const isValid = form.name.trim().length >= 2 && form.sex && form.bloodType && form.city.trim();
+  const validCity = Boolean(
+    form.city.trim() &&
+      rsCities.some((c) => normalizeText(c) === normalizeText(form.city))
+  );
+  const cityError = form.city.trim() && !validCity ? "Escolha uma cidade válida do RS." : null;
+
+  const birthTimestamp = form.birthDate ? Date.parse(form.birthDate) : NaN;
+  const isValidBirthDate =
+    Boolean(form.birthDate) &&
+    !Number.isNaN(birthTimestamp) &&
+    birthTimestamp <= Date.now();
+  const birthDateError = form.birthDate && !isValidBirthDate ? "Data inválida." : null;
+
+  const cpfError = form.cpf && !isCpf(form.cpf) ? "CPF inválido." : null;
+  const isValid =
+    form.name.trim().length >= 2 &&
+    form.sex &&
+    form.bloodType &&
+    validCity &&
+    isCpf(form.cpf) &&
+    isValidBirthDate;
 
   const handleSubmit = async () => {
     if (!isValid || !user) return;
@@ -39,10 +57,12 @@ const DonorRegister = () => {
     try {
       const { error } = await supabase.from("profiles").insert({
         user_id: user.id,
-        name: form.name.trim(),
+        name: capitalizeWords(form.name.trim()),
         sex: form.sex,
         blood_type: form.bloodType,
         city: form.city.trim(),
+        cpf: form.cpf.trim(),
+        birth_date: form.birthDate || null,
         last_donation: form.lastDonation || null,
         is_existing_donor: true,
       });
@@ -55,7 +75,7 @@ const DonorRegister = () => {
         throw error;
       }
       navigate("/dashboard");
-    } catch (e: any) {
+    } catch (e) {
       toast({ title: "Erro", description: e.message || "Tente novamente.", variant: "destructive" });
     } finally {
       setLoading(false);
@@ -81,7 +101,7 @@ const DonorRegister = () => {
               type="text"
               placeholder="Seu nome completo"
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e) => setForm({ ...form, name: capitalizeWords(e.target.value) })}
               className="w-full rounded-xl border border-input bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
@@ -126,6 +146,33 @@ const DonorRegister = () => {
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">CPF *</label>
+              <input
+                type="text"
+                placeholder="000.000.000-00"
+                inputMode="numeric"
+                value={form.cpf}
+                onChange={(e) => setForm({ ...form, cpf: formatCpf(e.target.value) })}
+                className="w-full rounded-xl border border-input bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              {cpfError && <p className="text-xs text-destructive mt-1">{cpfError}</p>}
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Data de nascimento *</label>
+              <input
+                type="date"
+                value={form.birthDate}
+                max={new Date().toISOString().split("T")[0]}
+                onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
+                className="w-full rounded-xl border border-input bg-card px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              {birthDateError && <p className="text-xs text-destructive mt-1">{birthDateError}</p>}
+            </div>
+          </div>
+
           <div className="relative">
             <label className="text-sm font-medium text-foreground mb-1.5 block">Cidade *</label>
             <input
@@ -137,31 +184,25 @@ const DonorRegister = () => {
               onBlur={() => setTimeout(() => setShowCities(false), 200)}
               className="w-full rounded-xl border border-input bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            {showCities && form.city && filteredCities.length > 0 && (
+            {cityError && <p className="text-xs text-destructive mt-1">{cityError}</p>}
+            {showCities && (
               <div className="absolute top-full left-0 right-0 bg-card border border-border rounded-xl mt-1 shadow-lg z-20 max-h-40 overflow-y-auto">
-                {filteredCities.slice(0, 5).map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onMouseDown={() => { setForm({ ...form, city: c }); setShowCities(false); }}
-                    className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
-                  >
-                    {c}
-                  </button>
-                ))}
+                {filteredCities.length > 0 ? (
+                  filteredCities.slice(0, 5).map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onMouseDown={() => { setForm({ ...form, city: c }); setShowCities(false); }}
+                      className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                    >
+                      {c}
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-4 py-3 text-sm text-muted-foreground">Nenhuma cidade encontrada.</div>
+                )}
               </div>
             )}
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Data da última doação</label>
-            <input
-              type="date"
-              value={form.lastDonation}
-              max={new Date().toISOString().split("T")[0]}
-              onChange={(e) => setForm({ ...form, lastDonation: e.target.value })}
-              className="w-full rounded-xl border border-input bg-card px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
           </div>
         </div>
 

@@ -37,7 +37,7 @@ const ShareButton = ({
       setShared(true);
       toast({ title: "Link copiado! 📋", description: "Cole onde quiser para convidar." });
       setTimeout(() => setShared(false), 1800);
-    } catch (err: any) {
+    } catch (err) {
       if (err?.name === "AbortError") return;
       toast({ title: "Não foi possível compartilhar", variant: "destructive" });
     }

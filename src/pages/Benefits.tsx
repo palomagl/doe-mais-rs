@@ -43,6 +43,32 @@ const Benefits = () => {
             Para usufruir dos benefícios, leve sua carteirinha de doador e documento com foto.
           </p>
         </div>
+
+        <div className="rounded-2xl bg-card border border-border p-5 mt-4">
+          <h2 className="text-lg font-bold text-foreground">O que é a carteirinha de doador?</h2>
+          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+            É o comprovante de que você é doador(a) de sangue. Com ela você garante direitos como meia-entrada, descontos em transporte e outros benefícios no Rio Grande do Sul.
+          </p>
+
+          <div className="grid gap-4 sm:grid-cols-2 mt-4">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Como emitir</h3>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                Peça sua carteirinha no hemocentro ou posto de coleta assim que fizer a doação. Aqui no app, você também pode gerar sua carteirinha digital depois de cadastrar seu perfil e confirmar a doação.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Onde emitir</h3>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                Em hemocentros estaduais, postos de coleta de hospitais conveniados e campanhas de doação no seu município. Leve sempre documento com foto e comprovante da doação.
+              </p>
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground mt-4">
+            Dica: se tiver dúvidas, pergunte ao atendente do hemocentro — eles orientam como usar a carteirinha nos benefícios locais.
+          </p>
+        </div>
       </div>
 
       <BottomNav />

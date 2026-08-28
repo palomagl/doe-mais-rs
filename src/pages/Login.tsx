@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Droplets, Eye, EyeOff, UserRound } from "lucide-react";
 import { setGuest } from "@/lib/guest";
+import { cpfAuthEmail, formatCpf, isCpf } from "@/lib/format";
 import logo from "@/assets/logo-doers.png";
 
 const translateError = (msg: string) => {
@@ -23,20 +24,30 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const authEmail = isCpf(identifier) ? cpfAuthEmail(identifier) : identifier.trim();
+  const passwordValid = password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
+  const passwordError = isSignUp && password && !passwordValid
+    ? "Senha precisa ter 8+ caracteres, letras e números."
+    : null;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password) return;
+    if (!identifier.trim() || !password) return;
+    if (isSignUp && !passwordValid) {
+      toast({ title: "Senha fraca", description: passwordError, variant: "destructive" });
+      return;
+    }
     setLoading(true);
 
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({
-          email: email.trim(),
+          email: authEmail,
           password,
           options: { emailRedirectTo: `${window.location.origin}/` },
         });
@@ -45,7 +56,7 @@ const Login = () => {
         toast({ title: "Conta criada! 🎉", description: "Bem-vindo ao Doe+ RS!" });
         navigate("/");
       } else {
-        const { data: authData, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        const { data: authData, error } = await supabase.auth.signInWithPassword({ email: authEmail, password });
         if (error) throw error;
         setGuest(false);
 
@@ -66,7 +77,7 @@ const Login = () => {
           navigate("/", { replace: true });
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Erro",
         description: translateError(error.message || "Algo deu errado."),
@@ -105,17 +116,23 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 flex-1">
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-foreground text-sm">E-mail</Label>
+            <Label htmlFor="identifier" className="text-foreground text-sm">E-mail ou CPF</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="identifier"
+              type="text"
+              placeholder="seu@email.com ou 000.000.000-00"
+              value={identifier}
+              onChange={(e) => setIdentifier(
+                isCpf(e.target.value) ? formatCpf(e.target.value) : e.target.value
+              )}
               required
-              autoComplete="email"
+              autoComplete="username"
+              inputMode={isCpf(identifier) ? "numeric" : "email"}
               className="rounded-xl h-12 bg-card"
             />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Use CPF ou e-mail. Se usar CPF, o login será tratado automaticamente.
+            </p>
           </div>
 
           <div className="space-y-1.5">
@@ -142,7 +159,9 @@ const Login = () => {
               </button>
             </div>
             {isSignUp ? (
-              <p className="text-xs text-muted-foreground">Mínimo de 6 caracteres</p>
+              <p className={`text-xs mt-1 ${passwordError ? "text-destructive" : "text-muted-foreground"}`}>
+                {passwordError ?? "Senha com 8+ caracteres, letras e números."}
+              </p>
             ) : (
               <div className="flex justify-end">
                 <Link
@@ -157,7 +176,7 @@ const Login = () => {
 
           <Button
             type="submit"
-            disabled={loading || !email.trim() || !password}
+            disabled={loading || !identifier.trim() || !password || (isSignUp && !passwordValid)}
             className="w-full h-12 rounded-xl text-base font-bold shadow-lg mt-2"
           >
             {loading ? (

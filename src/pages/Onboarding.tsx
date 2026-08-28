@@ -32,7 +32,7 @@ const Onboarding = () => {
         if (data) {
           navigate("/dashboard", { replace: true });
         }
-      } catch (error: any) {
+      } catch (error) {
         tapHaptic();
         toast({
           title: "Erro ao verificar perfil",

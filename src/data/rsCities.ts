@@ -1,0 +1,17 @@
+export const rsCities = [
+  "Porto Alegre",
+  "Caxias do Sul",
+  "Pelotas",
+  "Canoas",
+  "Santa Maria",
+  "Gravataí",
+  "Viamão",
+  "Novo Hamburgo",
+  "São Leopoldo",
+  "Rio Grande",
+  "Passo Fundo",
+  "Sapucaia do Sul",
+  "Uruguaiana",
+  "Santa Cruz do Sul",
+  "Bagé",
+];

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Gift, Star, Trophy, Check, Loader2 } from "lucide-react";
+import { Gift, Star, Trophy, Check, Loader2, X } from "lucide-react";
 import { rewards, Reward, POINTS_PER_DONATION } from "@/data/rewards";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,7 +31,7 @@ const Rewards = () => {
         if (cancelled) return;
         if (p) setPoints(p.reward_points ?? 0);
         if (r) setRedeemedIds(r.map((x) => x.reward_id));
-      } catch (error: any) {
+      } catch (error) {
         if (!cancelled) {
           tapHaptic();
           toast({
@@ -77,6 +77,7 @@ const Rewards = () => {
 
   };
 
+  const [showCardInfo, setShowCardInfo] = useState(true);
   const filtered = filter === "all" ? rewards : rewards.filter((r) => r.category === filter);
 
   const levelInfo = points >= 1000

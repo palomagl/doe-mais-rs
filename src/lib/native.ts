@@ -14,11 +14,11 @@ export async function initNative(onBack?: () => boolean | void) {
     await StatusBar.setStyle({ style: Style.Dark });
     await StatusBar.setBackgroundColor({ color: "#e02020" });
     await StatusBar.setOverlaysWebView({ overlay: false });
-  } catch {}
+  } catch { /* ambiente sem suporte nativo */ }
 
   try {
     await SplashScreen.hide({ fadeOutDuration: 250 });
-  } catch {}
+  } catch { /* ambiente sem suporte nativo */ }
 
   try {
     CapApp.addListener("backButton", ({ canGoBack }) => {
@@ -27,7 +27,7 @@ export async function initNative(onBack?: () => boolean | void) {
       if (canGoBack) window.history.back();
       else CapApp.exitApp();
     });
-  } catch {}
+  } catch { /* ambiente sem suporte nativo */ }
 }
 
 /** Light haptic tap — safe no-op on web. */
@@ -35,12 +35,12 @@ export async function tapHaptic() {
   if (!isNative()) return;
   try {
     await Haptics.impact({ style: ImpactStyle.Light });
-  } catch {}
+  } catch { /* ambiente sem suporte nativo */ }
 }
 
 export async function successHaptic() {
   if (!isNative()) return;
   try {
     await Haptics.impact({ style: ImpactStyle.Medium });
-  } catch {}
+  } catch { /* ambiente sem suporte nativo */ }
 }

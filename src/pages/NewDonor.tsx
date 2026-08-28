@@ -49,7 +49,7 @@ const NewDonor = () => {
         throw error;
       }
       navigate("/eligibility-quiz");
-    } catch (e: any) {
+    } catch (e) {
       toast({ title: "Erro", description: e.message || "Tente novamente.", variant: "destructive" });
     } finally {
       setLoading(false);

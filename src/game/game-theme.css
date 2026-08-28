@@ -1,0 +1,97 @@
+/*
+ * DOE+ HERO — tema do jogo, escopado em .doe-hero-game.
+ * Não afeta o restante do app: todas as variáveis e utilitários abaixo
+ * só valem dentro do container do jogo.
+ */
+
+.doe-hero-game {
+  --background: 2 46% 98%;
+  --foreground: 5 25% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 5 25% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 5 25% 10%;
+  --primary: 357 74% 47%;
+  --primary-foreground: 2 100% 99%;
+  --primary-deep: 353 95% 28%;
+  --primary-soft: 4 100% 96%;
+  --secondary: 2 43% 96%;
+  --secondary-foreground: 5 22% 19%;
+  --muted: 6 32% 96%;
+  --muted-foreground: 6 7% 46%;
+  --accent: 4 100% 96%;
+  --accent-foreground: 357 77% 35%;
+  --gold: 41 82% 55%;
+  --success: 151 75% 36%;
+  --info: 206 62% 51%;
+  --destructive: 359 75% 50%;
+  --destructive-foreground: 2 100% 99%;
+  --border: 6 18% 91%;
+  --input: 6 18% 91%;
+  --ring: 357 74% 47%;
+  --radius: 1rem;
+
+  --gradient-hero: linear-gradient(135deg, oklch(0.55 0.208 26), oklch(0.42 0.17 22));
+  --gradient-gold: linear-gradient(135deg, oklch(0.84 0.14 85), oklch(0.72 0.15 62));
+  --shadow-soft: 0 2px 8px -2px oklch(0.4 0.12 25 / 0.08), 0 8px 24px -12px oklch(0.4 0.12 25 / 0.12);
+  --shadow-card: 0 1px 2px oklch(0.4 0.12 25 / 0.05), 0 12px 32px -16px oklch(0.4 0.12 25 / 0.18);
+  --shadow-glow: 0 12px 40px -12px oklch(0.55 0.208 26 / 0.5);
+
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dark .doe-hero-game {
+  --background: 5 36% 7%;
+  --foreground: 2 27% 96%;
+  --card: 5 28% 11%;
+  --card-foreground: 2 27% 96%;
+  --popover: 5 28% 11%;
+  --popover-foreground: 2 27% 96%;
+  --primary: 1 77% 58%;
+  --primary-foreground: 2 100% 99%;
+  --primary-deep: 353 96% 23%;
+  --primary-soft: 3 44% 18%;
+  --secondary: 5 25% 16%;
+  --secondary-foreground: 2 27% 96%;
+  --muted: 5 25% 16%;
+  --muted-foreground: 6 11% 66%;
+  --accent: 4 41% 20%;
+  --accent-foreground: 6 95% 90%;
+  --border: 0 0% 100% / 0.12;
+  --input: 0 0% 100% / 0.15;
+}
+
+.doe-hero-game :is(h1, h2, h3, h4) {
+  font-family: "Sora", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Custom utilities the game markup relies on */
+.doe-hero-game .gradient-hero { background-image: var(--gradient-hero); }
+.doe-hero-game .gradient-gold { background-image: var(--gradient-gold); }
+.doe-hero-game .shadow-soft { box-shadow: var(--shadow-soft); }
+.doe-hero-game .shadow-card { box-shadow: var(--shadow-card); }
+.doe-hero-game .shadow-glow { box-shadow: var(--shadow-glow); }
+.doe-hero-game .surface-card {
+  background-color: hsl(var(--card));
+  border-radius: calc(var(--radius) + 12px);
+  border: 1px solid hsl(var(--border));
+  box-shadow: var(--shadow-soft);
+}
+.doe-hero-game .no-scrollbar { scrollbar-width: none; }
+.doe-hero-game .no-scrollbar::-webkit-scrollbar { display: none; }
+
+.doe-hero-game .animate-float { animation: dh-float 3.5s ease-in-out infinite; }
+.doe-hero-game .animate-pulse-ring { animation: dh-pulse-ring 1.8s ease-out infinite; }
+
+@keyframes dh-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes dh-pulse-ring {
+  0% { box-shadow: 0 0 0 0 oklch(0.55 0.208 26 / 0.45); }
+  100% { box-shadow: 0 0 0 22px oklch(0.55 0.208 26 / 0); }
+}

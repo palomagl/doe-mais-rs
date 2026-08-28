@@ -24,7 +24,7 @@ const ForgotPassword = () => {
       });
       if (error) throw error;
       setSent(true);
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Erro",
         description: error.message?.includes("rate") ? "Aguarde um momento e tente novamente." : "Não foi possível enviar o e-mail.",

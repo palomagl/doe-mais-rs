@@ -6,7 +6,7 @@ import { useGuest, useRequireAccount, setGuest } from "@/lib/guest";
 import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Save, LogOut, Shield, AlertTriangle, Award, Scale, ChevronRight,
-  Pencil, LogIn, UserRound,
+  Pencil, LogIn, UserRound, X,
 } from "lucide-react";
 import { successHaptic, tapHaptic } from "@/lib/native";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -14,14 +14,10 @@ import BottomNav from "@/components/BottomNav";
 import DigitalCard from "@/components/DigitalCard";
 import BadgeGrid from "@/components/BadgeGrid";
 import ShareButton from "@/components/ShareButton";
+import { capitalizeWords, formatCpf, isCpf, normalizeText } from "@/lib/format";
+import { rsCities } from "@/data/rsCities";
 
 const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-
-const formatCpf = (v: string) =>
-  v.replace(/\D/g, "").slice(0, 11)
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 
 const initials = (name: string) =>
   name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "?";
@@ -47,6 +43,7 @@ const Profile = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [donationCount, setDonationCount] = useState(0);
   const [cardPhotoUrl, setCardPhotoUrl] = useState<string | null>(null);
+  const [showCardInfo, setShowCardInfo] = useState(true);
   const [form, setForm] = useState({
     name: "",
     sex: "",
@@ -86,7 +83,7 @@ const Profile = () => {
           setCardPhotoUrl(p.card_photo_url ?? null);
         }
         setDonationCount(count ?? 0);
-      } catch (error: any) {
+      } catch (error) {
         if (!cancelled) {
           tapHaptic();
           toast({
@@ -117,6 +114,25 @@ const Profile = () => {
     setEditOpen(true);
   };
 
+  const validCity = rsCities.some(
+    (city) => normalizeText(city) === normalizeText(form.city)
+  );
+  const birthDate = form.birth_date;
+  const birthTimestamp = birthDate ? Date.parse(birthDate) : NaN;
+  const isValidBirthDate = !Number.isNaN(birthTimestamp) && birthTimestamp <= Date.now();
+  const cpfError = form.cpf && !isCpf(form.cpf) ? "CPF inválido." : null;
+  const cityError = form.city && !validCity ? "Cidade não encontrada no RS." : null;
+  const dateError = birthDate && !isValidBirthDate ? "Data de nascimento inválida." : null;
+  const canSaveProfile =
+    !saving &&
+    !!form.name.trim() &&
+    !!form.cpf.trim() &&
+    !!form.birth_date &&
+    !!form.city.trim() &&
+    !cpfError &&
+    !cityError &&
+    !dateError;
+
   const handleSave = async () => {
     if (requireAccount("salvar seus dados")) return;
     if (!user || !form.name.trim()) {
@@ -124,15 +140,30 @@ const Profile = () => {
       toast({ title: "Preencha seu nome", variant: "destructive" });
       return;
     }
+    if (!form.cpf.trim() || !isCpf(form.cpf)) {
+      tapHaptic();
+      toast({ title: "CPF inválido", description: "Use CPF válido no formato 000.000.000-00.", variant: "destructive" });
+      return;
+    }
+    if (!form.city.trim() || !validCity) {
+      tapHaptic();
+      toast({ title: "Cidade inválida", description: "Escolha uma cidade do Rio Grande do Sul.", variant: "destructive" });
+      return;
+    }
+    if (!birthDate || !isValidBirthDate) {
+      tapHaptic();
+      toast({ title: "Data inválida", description: "Informe uma data de nascimento válida no passado.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
       .update({
-        name: form.name.trim(),
+        name: capitalizeWords(form.name.trim()),
         sex: form.sex,
         blood_type: form.blood_type,
-        city: form.city.trim(),
-        cpf: form.cpf.trim() || null,
+        city: capitalizeWords(form.city.trim()),
+        cpf: form.cpf.trim(),
         birth_date: form.birth_date || null,
       })
       .eq("user_id", user.id);
@@ -237,14 +268,35 @@ const Profile = () => {
 
             {/* Carteirinha Digital */}
             {user && (
-              <DigitalCard
-                userId={user.id}
-                name={form.name}
-                bloodType={form.blood_type}
-                cpf={form.cpf}
-                cardPhotoUrl={cardPhotoUrl}
-                onPhotoChange={setCardPhotoUrl}
-              />
+              <>
+                <DigitalCard
+                  userId={user.id}
+                  name={form.name}
+                  bloodType={form.blood_type}
+                  cpf={form.cpf}
+                  cardPhotoUrl={cardPhotoUrl}
+                  onPhotoChange={setCardPhotoUrl}
+                />
+                {showCardInfo && (
+                  <div className="relative rounded-2xl bg-card border border-border p-4 mt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowCardInfo(false)}
+                      className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                      aria-label="Fechar informação"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <h2 className="text-sm font-semibold text-foreground">Carteirinha de doador</h2>
+                    <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                      A carteirinha de doador é o comprovante de que você já fez doação. Ela garante acesso a benefícios como descontos em transporte e lazer.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                      Ela fica disponível no seu perfil de doador abaixo, e você pode gerar a digital após cadastrar seu perfil e registrar a doação.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
 
             {form.name && (
@@ -341,7 +393,7 @@ const Profile = () => {
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Nome *</label>
               <input
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) => setForm({ ...form, name: capitalizeWords(e.target.value) })}
                 className="w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
@@ -356,6 +408,9 @@ const Profile = () => {
                   inputMode="numeric"
                   className="w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
+                {cpfError ? (
+                  <p className="mt-2 text-xs text-destructive">{cpfError}</p>
+                ) : null}
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">Nascimento</label>
@@ -365,6 +420,9 @@ const Profile = () => {
                   onChange={(e) => setForm({ ...form, birth_date: e.target.value })}
                   className="w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
+                {dateError ? (
+                  <p className="mt-2 text-xs text-destructive">{dateError}</p>
+                ) : null}
               </div>
             </div>
 
@@ -411,12 +469,15 @@ const Profile = () => {
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
                 className="w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
+              {cityError ? (
+                <p className="mt-2 text-xs text-destructive">{cityError}</p>
+              ) : null}
             </div>
 
             <button
               onClick={handleSave}
-              disabled={saving}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground py-3.5 font-semibold shadow-md transition-all active:scale-[0.98] ripple"
+              disabled={saving || !canSaveProfile}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground py-3.5 font-semibold shadow-md transition-all active:scale-[0.98] ripple disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> Salvar</>}
             </button>
